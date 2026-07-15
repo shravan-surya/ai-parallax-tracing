@@ -1,9 +1,64 @@
 {
-  "generated_at": "2026-07-15T19:00:31.468503+00:00",
+  "generated_at": "2026-07-15T21:23:20.778575+00:00",
   "source_repo": "shravan-surya/saras_kno_B",
   "branch": "feature/parallax-tracer",
-  "commit_count": 5,
+  "commit_count": 16,
   "commits": [
+    {
+      "sha": "df66f8e5",
+      "date": "2026-07-15T23:00:46+02:00",
+      "message": "fix(parallax-portal): tool panels not showing (inline style > CSS class)"
+    },
+    {
+      "sha": "3fc9a0dd",
+      "date": "2026-07-15T22:56:00+02:00",
+      "message": "fix(parallax-portal): fix blank interactive graph panel"
+    },
+    {
+      "sha": "f0a3ef29",
+      "date": "2026-07-15T22:50:33+02:00",
+      "message": "feat(parallax-portal): consolidate all views into /parallax/portal as JS panels"
+    },
+    {
+      "sha": "c293c8ea",
+      "date": "2026-07-15T22:38:08+02:00",
+      "message": "fix: parallax portal 500 error -- Request injection + module-level import"
+    },
+    {
+      "sha": "b5c363b8",
+      "date": "2026-07-15T22:34:25+02:00",
+      "message": "feat: /parallax/portal is now a proper docs-portal-style standalone page"
+    },
+    {
+      "sha": "88f382c5",
+      "date": "2026-07-15T22:18:21+02:00",
+      "message": "fix: /parallax/portal now own page + blast diagram PlantUML syntax"
+    },
+    {
+      "sha": "008abc13",
+      "date": "2026-07-15T22:09:12+02:00",
+      "message": "fix: parallax interactive graph -- RealDictCursor zip bug + schema column alignment"
+    },
+    {
+      "sha": "1f54a2ac",
+      "date": "2026-07-15T21:51:46+02:00",
+      "message": "fix(parallax): restore missing closing quote in Component() labels"
+    },
+    {
+      "sha": "02f46845",
+      "date": "2026-07-15T21:41:20+02:00",
+      "message": "fix(parallax): PlantUML Unicode/syntax fixes in C4 diagram generator"
+    },
+    {
+      "sha": "cc223c70",
+      "date": "2026-07-15T21:33:08+02:00",
+      "message": "feat(parallax): staleness check, auto-scan endpoint, fix RealDictCursor + JAR output naming"
+    },
+    {
+      "sha": "8b0202b5",
+      "date": "2026-07-15T21:01:42+02:00",
+      "message": "feat(parallax-46b): C4 PlantUML signal diagrams via local JAR"
+    },
     {
       "sha": "e2049e7e",
       "date": "2026-07-15T19:55:44+02:00",
@@ -65,6 +120,20 @@
       "completed_at": "2026-07-15T19:55:44+02:00",
       "source_commit": "e2049e7e",
       "source_message": "feat(parallax): git provenance capture \u2014 scan_runs, repo_refs, file_manifest"
+    },
+    {
+      "id": 7,
+      "status": "done",
+      "completed_at": "2026-07-15T21:01:42+02:00",
+      "source_commit": "8b0202b5",
+      "source_message": "feat(parallax-46b): C4 PlantUML signal diagrams via local JAR"
+    },
+    {
+      "id": 9,
+      "status": "done",
+      "completed_at": "2026-07-15T21:01:42+02:00",
+      "source_commit": "8b0202b5",
+      "source_message": "feat(parallax-46b): C4 PlantUML signal diagrams via local JAR"
     }
   ]
 }

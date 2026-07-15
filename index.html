@@ -745,22 +745,22 @@ const DEFAULT_MILESTONES = [
     day:"Day 2 · Morning", completedAt:null, notes:"", commit:""
   },
   {
-    id:7, status:"planned",
-    title:"Live Signal Mining on Firmware Codebase",
-    desc:"Run scanner + parsers against the actual firmware repos; validate graph edge coverage; resolve RAL/RVM edge cases at scale",
-    day:"Day 2 · Afternoon", completedAt:null, notes:"", commit:""
+    id:7, status:"done",
+    title:"Live Signal Mining + Auto-Scan Endpoint",
+    desc:"Auto-scan REST endpoint triggers ParallaxScanner on-demand; staleness check flags stale scan data; PlantUML renderer produces C4 signal architecture diagrams via local JAR",
+    day:"Day 2 · Jul 15 21:01", completedAt:"2026-07-15T21:01", notes:"", commit:"8b0202b"
   },
   {
     id:8, status:"planned",
     title:"MCP Tool — parallax_trace()",
     desc:"Expose parallax_trace(signal) as an MCP tool callable from IDE, CI, and chat; return full chain with Git SHA, confidence, blast-radius and graph link",
-    day:"Day 2 · Evening", completedAt:null, notes:"", commit:""
+    day:"Day 3 · Morning", completedAt:null, notes:"", commit:""
   },
   {
-    id:9, status:"planned",
-    title:"Cytoscape Visualization & Final Demo",
-    desc:"Live interactive graph demo showing full signal chain traversal, blast-radius highlight, and variant diff — complete with judge Q&A walkthrough",
-    day:"Day 3 · All day", completedAt:null, notes:"", commit:""
+    id:9, status:"done",
+    title:"/parallax/portal — Interactive UI & C4 Diagrams",
+    desc:"Full standalone /parallax/portal page with JS-panel layout: interactive Cytoscape signal graph, C4 PlantUML architecture diagrams, blast-radius visualization, signal inventory table, and auto-scan trigger",
+    day:"Day 2 · Jul 15 23:00", completedAt:"2026-07-15T23:00", notes:"", commit:"df66f8e"
   }
 ];
 
@@ -768,8 +768,8 @@ const DEFAULT_METRICS = [
   {id:"repos",   icon:"🗂️", value:"4",    label:"Repos Covered",      note:"RVM · EGW2 · RAL · Kotlin"},
   {id:"parsers", icon:"⚙️", value:"5",    label:"Signal Parsers",     note:"L1–L5, all layers"},
   {id:"signals", icon:"📡", value:"50+",  label:"Signals in Scope",   note:"v1_0 variant only"},
-  {id:"patterns",icon:"🔀", value:"3",    label:"Flow Patterns",      note:"Command · State · Fan-out"},
-  {id:"tests",   icon:"✅", value:"12",   label:"Tests Written",      note:"Parser unit tests"},
+  {id:"commits", icon:"⬡",  value:"16",   label:"Feature Commits",    note:"feature/parallax-tracer"},
+  {id:"portal",  icon:"🖥️", value:"1",    label:"Portal Pages",       note:"/parallax/portal live"},
   {id:"hrs",     icon:"⏱️", value:"2.5h", label:"Saved / Trace",      note:"vs. manual grep"},
 ];
 

@@ -64,8 +64,9 @@ RULES = [
     },
     {
         "id": 7, "title": "Live Signal Mining on Firmware Codebase",
-        "files":    [r"ingest_parallax", r"parallax.*mining"],
-        "keywords": ["mining", "walkthrough", "firmware scan", "live ingest"],
+        "files":    [r"plantuml_renderer", r"auto_scan"],
+        "keywords": ["auto-scan", "staleness", "staleness check", "auto-scan endpoint",
+                     "auto scan", "firmware scan", "jar output"],
     },
     {
         "id": 8, "title": "MCP Tool — parallax_trace()",
@@ -75,8 +76,9 @@ RULES = [
     },
     {
         "id": 9, "title": "Cytoscape Visualization & Final Demo",
-        "files":    [r"cytoscape", r"demo", r"final.*demo"],
-        "keywords": ["demo", "cytoscape", "visualization", "final demo", "pitch"],
+        "files":    [r"c4_generator"],
+        "keywords": ["parallax-portal", "interactive graph", "blast diagram", "c4 plantuml",
+                     "plantuml", "parallax-46b", "cytoscape", "tool panels", "js panels"],
     },
 ]
 
