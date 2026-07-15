@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-07-15T19:00:31.468503+00:00",
+  "source_repo": "shravan-surya/saras_kno_B",
+  "branch": "feature/parallax-tracer",
+  "commit_count": 5,
+  "commits": [
+    {
+      "sha": "e2049e7e",
+      "date": "2026-07-15T19:55:44+02:00",
+      "message": "feat(parallax): git provenance capture \u2014 scan_runs, repo_refs, file_manifest"
+    },
+    {
+      "sha": "dd4ac145",
+      "date": "2026-07-15T17:15:28+02:00",
+      "message": "fix: scope parallax tracer to v1_0 only \u2014 remove v2_1 paths"
+    },
+    {
+      "sha": "3b3b0a9d",
+      "date": "2026-07-15T17:13:06+02:00",
+      "message": "feat: Parallax Tracer hackathon scaffolding \u2014 Day 1+2 ready"
+    },
+    {
+      "sha": "a9544b50",
+      "date": "2026-07-15T16:52:58+02:00",
+      "message": "docs: Parallax Tracer hackathon concept v3"
+    },
+    {
+      "sha": "16c51d8e",
+      "date": "2026-07-11T17:05:09+02:00",
+      "message": "feat(phase-42-p0): Parallax + SysML v2 plugin skeletons + portal nav merge"
+    }
+  ],
+  "milestone_updates": [
+    {
+      "id": 1,
+      "status": "done",
+      "completed_at": "2026-07-11T17:05:09+02:00",
+      "source_commit": "16c51d8e",
+      "source_message": "feat(phase-42-p0): Parallax + SysML v2 plugin skeletons + portal nav merge"
+    },
+    {
+      "id": 2,
+      "status": "done",
+      "completed_at": "2026-07-11T17:05:09+02:00",
+      "source_commit": "16c51d8e",
+      "source_message": "feat(phase-42-p0): Parallax + SysML v2 plugin skeletons + portal nav merge"
+    },
+    {
+      "id": 3,
+      "status": "done",
+      "completed_at": "2026-07-11T17:05:09+02:00",
+      "source_commit": "16c51d8e",
+      "source_message": "feat(phase-42-p0): Parallax + SysML v2 plugin skeletons + portal nav merge"
+    },
+    {
+      "id": 4,
+      "status": "done",
+      "completed_at": "2026-07-15T17:13:06+02:00",
+      "source_commit": "3b3b0a9d",
+      "source_message": "feat: Parallax Tracer hackathon scaffolding \u2014 Day 1+2 ready"
+    },
+    {
+      "id": 5,
+      "status": "done",
+      "completed_at": "2026-07-15T19:55:44+02:00",
+      "source_commit": "e2049e7e",
+      "source_message": "feat(parallax): git provenance capture \u2014 scan_runs, repo_refs, file_manifest"
+    }
+  ]
+}

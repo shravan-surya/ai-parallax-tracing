@@ -1,0 +1,38 @@
+# Companion workflow — copy this to saras_kno_B (the private source repo):
+#   .github/workflows/parallax-dashboard-dispatch.yml
+#
+# Required secret in saras_kno_B:
+#   DASHBOARD_PAT — a Personal Access Token with `public_repo` scope
+#   (needed only to trigger a workflow in the public ai-parallax-tracing repo)
+#   Add at: saras_kno_B → Settings → Secrets → Actions → New secret
+
+name: Trigger Parallax Dashboard Sync
+
+on:
+  push:
+    branches:
+      - 'feature/parallax*'
+    paths:
+      - 'knowledge_base/plugins/parallax_tracer/**'
+
+jobs:
+  dispatch:
+    name: Dispatch to dashboard repo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send repository_dispatch to ai-parallax-tracing
+        run: |
+          curl -fsSL -X POST \
+            -H "Authorization: token ${{ secrets.DASHBOARD_PAT }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/shravan-surya/ai-parallax-tracing/dispatches \
+            -d '{
+              "event_type": "parallax-push",
+              "client_payload": {
+                "ref":    "${{ github.ref }}",
+                "sha":    "${{ github.sha }}",
+                "pusher": "${{ github.actor }}"
+              }
+            }'
+          echo "✓ Dispatched parallax-push event to ai-parallax-tracing"

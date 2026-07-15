@@ -1,598 +1,258 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Parallax Tracer — Hackathon Dashboard</title>
-  <style>
-    /* =============================================
-       THEME TOKENS
-    ============================================= */
-    :root {
-      --accent:        #0969da;
-      --accent-2:      #1a7f64;
-      --accent-3:      #6e40c9;
-      --bg:            #ffffff;
-      --bg-subtle:     #f6f8fa;
-      --bg-card:       #ffffff;
-      --bg-inset:      #f0f4f8;
-      --border:        #d0d7de;
-      --border-muted:  #e8ecf0;
-      --text-primary:  #1f2328;
-      --text-secondary:#57606a;
-      --text-muted:    #8c959f;
-      --green:         #1a7f37;
-      --green-bg:      #dafbe1;
-      --green-border:  #aceebb;
-      --amber:         #9a6700;
-      --amber-bg:      #fff8c5;
-      --amber-border:  #f5c518;
-      --gray-bg:       #f6f8fa;
-      --gray-border:   #d0d7de;
-      --shadow-sm:     0 1px 3px rgba(27,31,36,0.1), 0 0 0 1px rgba(27,31,36,0.06);
-      --shadow-md:     0 3px 12px rgba(27,31,36,0.12), 0 0 0 1px rgba(27,31,36,0.07);
-      --font:          -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      --mono:          'SF Mono','Fira Code','Cascadia Code',monospace;
-      --radius:        8px;
-      --nav-bg:        rgba(255,255,255,0.9);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Parallax Tracer — Hackathon Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+/* ── THEME TOKENS ─────────────────────────────────────────────────── */
+:root{
+  --accent:#0969da;--accent2:#1a7f64;--accent3:#6e40c9;
+  --bg:#f6f8fa;--bg-card:#ffffff;--bg-inset:#f0f4f8;--bg-nav:rgba(255,255,255,0.92);
+  --border:#d0d7de;--border-subtle:#e8ecf0;
+  --tx:#1f2328;--tx2:#57606a;--tx3:#8c959f;
+  --green:#1a7f37;--green-bg:#dafbe1;--green-bd:#aceebb;
+  --amber:#9a6700;--amber-bg:#fff8c5;--amber-bd:#f5c518;
+  --gray-bg:#f6f8fa;--gray-bd:#d0d7de;
+  --shadow-s:0 1px 3px rgba(27,31,36,.1),0 0 0 1px rgba(27,31,36,.06);
+  --shadow-m:0 4px 16px rgba(27,31,36,.12),0 0 0 1px rgba(27,31,36,.06);
+  --r:8px;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --mono:'SF Mono','Fira Code','Cascadia Code',monospace;
+}
+[data-theme="dark"]{
+  --accent:#4493f8;--accent2:#3fb950;--accent3:#bc8cff;
+  --bg:#0d1117;--bg-card:#161b22;--bg-inset:#0d1117;--bg-nav:rgba(13,17,23,0.92);
+  --border:#30363d;--border-subtle:#21262d;
+  --tx:#e6edf3;--tx2:#8b949e;--tx3:#6e7681;
+  --green:#3fb950;--green-bg:#0d2f16;--green-bd:#1a4a1e;
+  --amber:#d29922;--amber-bg:#2d1f00;--amber-bd:#6e4800;
+  --gray-bg:#161b22;--gray-bd:#30363d;
+  --shadow-s:0 1px 3px rgba(0,0,0,.5);--shadow-m:0 4px 16px rgba(0,0,0,.6);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--tx);line-height:1.6;overflow-x:hidden;transition:background .25s,color .25s}
+a{color:var(--accent)}
+code{font-family:var(--mono);font-size:.82em;background:var(--bg-inset);border:1px solid var(--border-subtle);border-radius:4px;padding:.1em .35em}
 
-    [data-theme="dark"] {
-      --accent:        #4493f8;
-      --accent-2:      #3fb950;
-      --accent-3:      #bc8cff;
-      --bg:            #0d1117;
-      --bg-subtle:     #161b22;
-      --bg-card:       #161b22;
-      --bg-inset:      #0d1117;
-      --border:        #30363d;
-      --border-muted:  #21262d;
-      --text-primary:  #e6edf3;
-      --text-secondary:#8b949e;
-      --text-muted:    #6e7681;
-      --green:         #3fb950;
-      --green-bg:      #0d2f16;
-      --green-border:  #1a4a1e;
-      --amber:         #d29922;
-      --amber-bg:      #2d1f00;
-      --amber-border:  #6e4800;
-      --gray-bg:       #161b22;
-      --gray-border:   #30363d;
-      --shadow-sm:     0 1px 3px rgba(0,0,0,0.4);
-      --shadow-md:     0 3px 12px rgba(0,0,0,0.5);
-      --nav-bg:        rgba(13,17,23,0.9);
-    }
+/* ── NAV ────────────────────────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:.7rem 2rem;background:var(--bg-nav);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);box-shadow:var(--shadow-s);transition:background .25s}
+.nav-brand{font-weight:700;font-size:.9rem;color:var(--accent);display:flex;align-items:center;gap:.4rem}
+.nav-links{display:flex;gap:.15rem;list-style:none}
+.nav-links a{color:var(--tx2);text-decoration:none;font-size:.83rem;padding:.3rem .6rem;border-radius:6px;transition:background .15s,color .15s}
+.nav-links a:hover{background:var(--bg-inset);color:var(--tx)}
+.nav-right{display:flex;align-items:center;gap:.6rem}
+.nav-badge{font-size:.7rem;font-weight:600;padding:.2rem .55rem;background:var(--bg-inset);border:1px solid var(--border);border-radius:999px;color:var(--tx2)}
+.theme-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg-card);color:var(--tx2);cursor:pointer;font-size:.95rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+.sync-indicator{font-size:.68rem;color:var(--tx3);display:flex;align-items:center;gap:.3rem}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
 
-    /* =============================================
-       RESET & BASE
-    ============================================= */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; font-size: 16px; }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text-primary);
-      line-height: 1.6;
-      overflow-x: hidden;
-      transition: background 0.25s, color 0.25s;
-    }
-    a { color: var(--accent); }
-    code {
-      font-family: var(--mono);
-      font-size: 0.82em;
-      background: var(--bg-inset);
-      border: 1px solid var(--border-muted);
-      border-radius: 4px;
-      padding: 0.1em 0.35em;
-    }
+/* ── LAYOUT ─────────────────────────────────────────────────────── */
+section{padding:5rem 2rem}
+.container{max-width:1080px;margin:0 auto}
+.section-label{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.4rem}
+h2{font-size:clamp(1.4rem,2.8vw,2rem);font-weight:700;margin-bottom:.6rem;line-height:1.2}
+p.lead{font-size:.97rem;color:var(--tx2);max-width:680px;margin-bottom:1.75rem}
 
-    /* =============================================
-       NAVIGATION
-    ============================================= */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.75rem 2rem;
-      background: var(--nav-bg);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      transition: background 0.25s, border-color 0.25s;
-    }
-    .nav-brand {
-      font-weight: 700; font-size: 0.9rem;
-      color: var(--accent); letter-spacing: 0.02em;
-      display: flex; align-items: center; gap: 0.4rem;
-    }
-    .nav-links {
-      display: flex; gap: 0.25rem; list-style: none;
-    }
-    .nav-links a {
-      color: var(--text-secondary); text-decoration: none;
-      font-size: 0.85rem; padding: 0.3rem 0.65rem; border-radius: 6px;
-      transition: background 0.15s, color 0.15s;
-    }
-    .nav-links a:hover { background: var(--bg-subtle); color: var(--text-primary); }
-    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
-    .nav-badge {
-      font-size: 0.72rem; font-weight: 600;
-      padding: 0.2rem 0.6rem;
-      background: var(--bg-subtle);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      color: var(--text-secondary);
-    }
-    /* Theme toggle */
-    .theme-toggle {
-      width: 34px; height: 34px; border-radius: 50%;
-      border: 1px solid var(--border);
-      background: var(--bg-subtle);
-      color: var(--text-secondary);
-      cursor: pointer; font-size: 1rem;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
-    }
-    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+/* ── HERO ───────────────────────────────────────────────────────── */
+#hero{min-height:100vh;padding-top:5rem;display:flex;align-items:center;
+  background:radial-gradient(ellipse at 10% 60%,rgba(9,105,218,.07) 0%,transparent 55%),
+             radial-gradient(ellipse at 88% 20%,rgba(110,64,201,.05) 0%,transparent 55%),
+             var(--bg);border-bottom:1px solid var(--border)}
+.hero-grid{display:grid;grid-template-columns:1fr 250px;gap:3.5rem;align-items:center}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.76rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:var(--bg-card);border:1px solid var(--border);padding:.28rem .75rem;border-radius:999px;margin-bottom:1.1rem;box-shadow:var(--shadow-s)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;animation:livepulse 2s infinite}
+@keyframes livepulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.72)}}
+h1{font-size:clamp(1.9rem,4.2vw,3rem);font-weight:800;line-height:1.1;margin-bottom:1.1rem}
+.hero-sub{font-size:1rem;color:var(--tx2);margin-bottom:1.6rem;max-width:540px}
+.hero-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:2rem}
+.tag{font-size:.7rem;font-family:var(--mono);padding:.18rem .5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;color:var(--tx2)}
+/* Ring */
+.ring-wrap{display:flex;flex-direction:column;align-items:center;gap:.65rem}
+.ring-label-top{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
+.ring-container{position:relative;display:inline-flex}
+.ring-svg{transform:rotate(-90deg)}
+.ring-track{fill:none;stroke:var(--border);stroke-width:9}
+.ring-fill{fill:none;stroke:var(--accent);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-pct{font-size:1.7rem;font-weight:800;color:var(--tx);line-height:1}
+.ring-sub{font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-top:.12rem}
+.ring-caption{font-size:.72rem;color:var(--tx2);text-align:center;max-width:190px}
 
-    /* =============================================
-       LAYOUT HELPERS
-    ============================================= */
-    section { padding: 5rem 2rem; }
-    .container { max-width: 1080px; margin: 0 auto; }
-    .section-label {
-      font-size: 0.72rem; font-weight: 700;
-      letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 0.4rem;
-    }
-    h2 {
-      font-size: clamp(1.5rem, 3vw, 2.1rem);
-      font-weight: 700; margin-bottom: 0.75rem; line-height: 1.2;
-    }
-    p.lead {
-      font-size: 1rem; color: var(--text-secondary);
-      max-width: 680px; margin-bottom: 2rem;
-    }
-    .divider { border: none; border-top: 1px solid var(--border-muted); margin: 0; }
+/* ── PROBLEM ─────────────────────────────────────────────────────── */
+#problem{background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.7rem;margin-top:1.5rem}
+.pain-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.2rem;box-shadow:var(--shadow-s);transition:box-shadow .2s,transform .2s}
+.pain-card:hover{box-shadow:var(--shadow-m);transform:translateY(-2px)}
+.pain-icon{font-size:1.3rem;margin-bottom:.5rem}
+.pain-title{font-size:.86rem;font-weight:700;margin-bottom:.25rem}
+.pain-desc{font-size:.78rem;color:var(--tx2);line-height:1.5}
+.chain-wrap{margin:1.5rem 0;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem;box-shadow:var(--shadow-s);overflow-x:auto}
+.chain{display:flex;align-items:center;min-width:660px}
+.chain-node{display:flex;flex-direction:column;align-items:center;gap:.22rem;min-width:108px}
+.cbox{padding:.4rem .65rem;border-radius:6px;font-size:.72rem;font-weight:700;text-align:center;white-space:nowrap;font-family:var(--mono);border:1px solid}
+.cbox.app  {background:#eef6ff;border-color:#b6d4fe;color:#0550ae}
+.cbox.rvm  {background:#fffbeb;border-color:#fcd34d;color:#78350f}
+.cbox.egw  {background:#ecfdf5;border-color:#6ee7b7;color:#065f46}
+.cbox.zon  {background:#faf5ff;border-color:#d8b4fe;color:#581c87}
+[data-theme=dark] .cbox.app{background:#0c1f3a;border-color:#1a3a6e;color:#79b8ff}
+[data-theme=dark] .cbox.rvm{background:#2d1f00;border-color:#6e4800;color:#fbbf24}
+[data-theme=dark] .cbox.egw{background:#0d2f16;border-color:#1a4a1e;color:#56d364}
+[data-theme=dark] .cbox.zon{background:#2a0f4a;border-color:#5b21b6;color:#c084fc}
+.crepo{font-size:.58rem;color:var(--tx3);font-family:var(--mono);text-align:center}
+.carr{flex:1;display:flex;flex-direction:column;align-items:center;gap:.18rem;padding:0 .15rem}
+.carr-line{width:100%;height:2px;background:linear-gradient(90deg,var(--border),var(--accent),var(--border));position:relative}
+.carr-line::after{content:'▶';position:absolute;right:-6px;top:-7px;font-size:.62rem;color:var(--accent)}
+.carr-label{font-size:.56rem;color:var(--tx3);font-family:var(--mono);text-align:center}
+.chain-caption{margin-top:.9rem;font-size:.76rem;color:var(--tx2);text-align:center}
+.chain-caption strong{color:var(--tx)}
 
-    /* =============================================
-       HERO
-    ============================================= */
-    #hero {
-      min-height: 100vh;
-      padding-top: 5rem;
-      display: flex; align-items: center;
-      background:
-        radial-gradient(ellipse at 15% 60%, rgba(9,105,218,0.06) 0%, transparent 55%),
-        radial-gradient(ellipse at 85% 25%, rgba(110,64,201,0.05) 0%, transparent 55%),
-        var(--bg);
-      border-bottom: 1px solid var(--border);
-    }
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1fr 260px;
-      gap: 4rem; align-items: center;
-    }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      font-size: 0.78rem; font-weight: 600;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--accent);
-      background: var(--bg-subtle);
-      border: 1px solid var(--border);
-      padding: 0.3rem 0.8rem; border-radius: 999px;
-      margin-bottom: 1.25rem;
-    }
-    .live-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--green); flex-shrink: 0;
-      animation: livePulse 2s infinite;
-    }
-    @keyframes livePulse {
-      0%,100% { opacity:1; transform:scale(1); }
-      50%      { opacity:0.5; transform:scale(0.75); }
-    }
-    h1 {
-      font-size: clamp(2rem, 4.5vw, 3.2rem);
-      font-weight: 800; line-height: 1.1; margin-bottom: 1.25rem;
-    }
-    .hero-tagline {
-      font-size: 1.05rem; color: var(--text-secondary);
-      margin-bottom: 1.75rem; max-width: 560px;
-    }
-    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 2rem; }
-    .tag {
-      font-size: 0.72rem; font-family: var(--mono);
-      padding: 0.2rem 0.55rem;
-      background: var(--bg-subtle);
-      border: 1px solid var(--border);
-      border-radius: 4px; color: var(--text-secondary);
-    }
+/* ── SLIDES ──────────────────────────────────────────────────────── */
+#solution{background:var(--bg)}
+.slides-outer{overflow:hidden;border-radius:var(--r);box-shadow:var(--shadow-m);border:1px solid var(--border)}
+.slides-track{display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1)}
+/* Each slide */
+.slide{min-width:100%;background:var(--bg-card);padding:0}
+.slide-head{padding:1.6rem 2rem 1.2rem;border-bottom:1px solid var(--border-subtle)}
+.slide-eyebrow{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-family:var(--mono);margin-bottom:.3rem}
+.slide-head h3{font-size:clamp(1.1rem,2vw,1.5rem);font-weight:700;line-height:1.2;margin-bottom:.45rem}
+.slide-intro{font-size:.88rem;color:var(--tx2);line-height:1.55;max-width:720px}
+.slide-body{display:grid;grid-template-columns:1fr 1fr;min-height:320px}
+.slide-left{padding:1.5rem 1.75rem;border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;gap:1rem}
+.slide-right{padding:1.25rem 1.5rem;background:var(--bg-inset);display:flex;align-items:center;justify-content:center}
 
-    /* Progress ring */
-    .ring-wrap {
-      display: flex; flex-direction: column;
-      align-items: center; gap: 0.75rem;
-    }
-    .ring-label-top {
-      font-size: 0.72rem; font-weight: 700;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--text-muted);
-    }
-    .ring-container { position: relative; display: inline-flex; }
-    .ring-svg { transform: rotate(-90deg); }
-    .ring-track { fill: none; stroke: var(--border); stroke-width: 9; }
-    .ring-fill  {
-      fill: none; stroke: var(--accent); stroke-width: 9;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1);
-    }
-    .ring-center-text {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-    }
-    .ring-pct {
-      font-size: 1.75rem; font-weight: 800;
-      color: var(--text-primary); line-height: 1;
-    }
-    .ring-sub {
-      font-size: 0.6rem; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.05em;
-      margin-top: 0.15rem;
-    }
-    .ring-caption {
-      font-size: 0.75rem; color: var(--text-secondary);
-      text-align: center; max-width: 200px;
-    }
+/* Step list on left */
+.steps{display:flex;flex-direction:column;gap:.65rem}
+.step{display:flex;gap:.8rem;align-items:flex-start}
+.step-badge{flex-shrink:0;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;letter-spacing:.04em;margin-top:.1rem;font-family:var(--mono)}
+.step-badge.l1{background:#eef6ff;color:#0550ae;border:1px solid #b6d4fe}
+.step-badge.l2{background:#fffbeb;color:#78350f;border:1px solid #fcd34d}
+.step-badge.l3{background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7}
+.step-badge.l4{background:#faf5ff;color:#581c87;border:1px solid #d8b4fe}
+.step-badge.l5{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
+.step-badge.l0{background:var(--bg-inset);color:var(--tx2);border:1px solid var(--border)}
+[data-theme=dark] .step-badge.l1{background:#0c1f3a;color:#79b8ff;border-color:#1a3a6e}
+[data-theme=dark] .step-badge.l2{background:#2d1f00;color:#fbbf24;border-color:#6e4800}
+[data-theme=dark] .step-badge.l3{background:#0d2f16;color:#56d364;border-color:#1a4a1e}
+[data-theme=dark] .step-badge.l4{background:#2a0f4a;color:#c084fc;border-color:#5b21b6}
+[data-theme=dark] .step-badge.l5{background:#2d0a14;color:#fda4af;border-color:#9f1239}
+.step-content{flex:1;line-height:1}
+.step-title{font-size:.84rem;font-weight:700;color:var(--tx);margin-bottom:.18rem}
+.step-desc{font-size:.78rem;color:var(--tx2);line-height:1.5}
 
-    /* =============================================
-       PROBLEM
-    ============================================= */
-    #problem { background: var(--bg-subtle); border-bottom: 1px solid var(--border); }
-    .pain-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 0.75rem; margin-top: 1.5rem;
-    }
-    .pain-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.25rem 1.25rem;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.2s, transform 0.2s;
-    }
-    .pain-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-    .pain-icon { font-size: 1.4rem; margin-bottom: 0.6rem; }
-    .pain-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.3rem; }
-    .pain-desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
+/* Mermaid container */
+.mermaid-box{width:100%;max-width:380px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--r);padding:1rem;box-shadow:var(--shadow-s);overflow:auto}
+.mermaid-box svg{max-width:100%;height:auto}
 
-    .signal-chain-wrap {
-      margin: 1.75rem 0;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      box-shadow: var(--shadow-sm);
-      overflow-x: auto;
-    }
-    .chain { display: flex; align-items: center; min-width: 680px; }
-    .chain-node { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; min-width: 110px; }
-    .chain-box {
-      padding: 0.45rem 0.7rem; border-radius: 6px;
-      font-size: 0.73rem; font-weight: 700; text-align: center;
-      white-space: nowrap; font-family: var(--mono);
-      border: 1px solid;
-    }
-    .chain-box.app    { background:#f0f7ff; border-color:#b6d4fe; color:#0550ae; }
-    .chain-box.rvm    { background:#fff8f0; border-color:#f5c518; color:#6e3c00; }
-    .chain-box.egw    { background:#f0fff4; border-color:#aceebb; color:#1a5e2e; }
-    .chain-box.zonal  { background:#fdf0ff; border-color:#d8b4fe; color:#5b21b6; }
-    [data-theme="dark"] .chain-box.app   { background:#0c1f3a; border-color:#1a3a6e; color:#79b8ff; }
-    [data-theme="dark"] .chain-box.rvm   { background:#2d1f00; border-color:#6e4800; color:#f5c518; }
-    [data-theme="dark"] .chain-box.egw   { background:#0d2f16; border-color:#1a4a1e; color:#56d364; }
-    [data-theme="dark"] .chain-box.zonal { background:#2a0f4a; border-color:#5b21b6; color:#c084fc; }
-    .chain-repo { font-size: 0.6rem; color: var(--text-muted); font-family: var(--mono); text-align: center; }
-    .chain-arrow {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; gap: 0.2rem; padding: 0 0.2rem;
-    }
-    .chain-line {
-      width: 100%; height: 2px;
-      background: linear-gradient(90deg, var(--border), var(--accent), var(--border));
-      position: relative;
-    }
-    .chain-line::after {
-      content:'▶'; position: absolute; right: -6px; top: -7px;
-      font-size: 0.65rem; color: var(--accent);
-    }
-    .chain-label { font-size: 0.58rem; color: var(--text-muted); font-family: var(--mono); text-align: center; }
-    .chain-caption { margin-top: 1rem; font-size: 0.78rem; color: var(--text-secondary); text-align: center; }
-    .chain-caption strong { color: var(--text-primary); }
+/* Slide nav */
+.slides-nav{display:flex;align-items:center;justify-content:center;gap:.7rem;margin-top:1.1rem}
+.slide-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg-card);color:var(--tx2);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .15s;box-shadow:var(--shadow-s)}
+.slide-btn:hover{border-color:var(--accent);color:var(--accent)}
+.dots{display:flex;gap:.4rem}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;transition:background .2s,transform .2s}
+.dot.active{background:var(--accent);transform:scale(1.35)}
 
-    /* =============================================
-       SOLUTION SLIDES
-    ============================================= */
-    #solution { background: var(--bg); }
-    .slides-outer { position: relative; overflow: hidden; border-radius: var(--radius); }
-    .slides-track {
-      display: flex;
-      transition: transform 0.45s cubic-bezier(.4,0,.2,1);
-    }
-    .slide {
-      min-width: 100%; padding: 2rem 2.25rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-sm);
-    }
-    .slide-num {
-      font-size: 0.68rem; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 0.35rem;
-      font-family: var(--mono);
-    }
-    .slide h3 { font-size: clamp(1.1rem,2.2vw,1.6rem); font-weight: 700; margin-bottom: 0.9rem; }
-    .slide-body { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
-    .slide-text p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.85rem; }
-    .bullets { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
-    .bullets li {
-      display: flex; gap: 0.55rem; font-size: 0.875rem;
-      color: var(--text-secondary); align-items: flex-start;
-    }
-    .bullets li::before { content:'→'; color: var(--accent); flex-shrink: 0; margin-top: 0.05rem; }
-    .bullets li strong { color: var(--text-primary); }
-    .slide-visual {
-      background: var(--bg-inset);
-      border: 1px solid var(--border);
-      border-radius: 6px; padding: 1.1rem;
-      font-size: 0.77rem; font-family: var(--mono);
-      color: var(--text-secondary);
-      white-space: pre; overflow-x: auto; line-height: 1.65;
-    }
-    .slides-nav {
-      display: flex; align-items: center;
-      justify-content: center; gap: 0.75rem; margin-top: 1.25rem;
-    }
-    .slide-btn {
-      width: 34px; height: 34px; border-radius: 50%;
-      border: 1px solid var(--border);
-      background: var(--bg-card); color: var(--text-secondary);
-      cursor: pointer; font-size: 0.9rem;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s; box-shadow: var(--shadow-sm);
-    }
-    .slide-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .slide-dots { display: flex; gap: 0.4rem; }
-    .dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--border); cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
-    }
-    .dot.active { background: var(--accent); transform: scale(1.35); }
+/* ── MILESTONES ─────────────────────────────────────────────────── */
+#milestones{background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.ms-row{display:flex;flex-wrap:wrap;gap:1.5rem;margin-bottom:.65rem}
+.ms-stat{font-size:.8rem;color:var(--tx2)}
+.ms-stat strong{color:var(--tx)}
+.pbar-wrap{width:100%;height:6px;background:var(--border);border-radius:3px;margin-bottom:2.25rem;overflow:hidden}
+.pbar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .8s ease}
+/* Timeline */
+.tl{position:relative}
+.tl-item{display:flex;gap:1.1rem;margin-bottom:.9rem;position:relative}
+.tl-item:not(:last-child) .tl-col::after{content:'';position:absolute;left:50%;top:22px;bottom:-0.9rem;width:2px;transform:translateX(-50%);background:var(--border-subtle)}
+.tl-col{position:relative;flex-shrink:0;width:38px;display:flex;justify-content:center;padding-top:3px}
+.tl-dot{width:20px;height:20px;border-radius:50%;border:2.5px solid;background:var(--bg-card);position:relative;z-index:1;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.tl-dot:hover{transform:scale(1.2)}
+.tl-dot.done{background:var(--green);border-color:var(--green)}
+.tl-dot.ongoing{border-color:var(--amber);animation:dotglow 2s infinite}
+.tl-dot.planned{border-color:var(--border)}
+@keyframes dotglow{0%,100%{box-shadow:0 0 0 0 rgba(210,153,34,0)}50%{box-shadow:0 0 0 5px rgba(210,153,34,.3)}}
+.tl-card{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.85rem 1.1rem;box-shadow:var(--shadow-s);transition:box-shadow .2s}
+.tl-card:hover{box-shadow:var(--shadow-m)}
+.tl-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:.65rem;margin-bottom:.22rem}
+.tl-title{font-size:.88rem;font-weight:700}
+.badge{font-size:.64rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:.13rem .45rem;border-radius:4px;border:1px solid;white-space:nowrap;flex-shrink:0}
+.badge.done{color:var(--green);background:var(--green-bg);border-color:var(--green-bd)}
+.badge.ongoing{color:var(--amber);background:var(--amber-bg);border-color:var(--amber-bd)}
+.badge.planned{color:var(--tx3);background:var(--gray-bg);border-color:var(--gray-bd)}
+.tl-desc{font-size:.77rem;color:var(--tx2);margin-bottom:.4rem}
+.tl-meta{display:flex;flex-wrap:wrap;align-items:center;gap:.65rem}
+.tl-day{font-size:.68rem;color:var(--tx3);font-family:var(--mono)}
+.tl-at{font-size:.68rem;color:var(--green);font-family:var(--mono)}
+.tl-commit{font-size:.68rem;color:var(--accent);font-family:var(--mono)}
+.tl-notes{font-size:.76rem;color:var(--accent);font-style:italic;margin-top:.35rem}
+.tl-actions{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.55rem}
+.btn-xs{font-size:.68rem;padding:.2rem .55rem;border-radius:5px;border:1px solid;background:transparent;cursor:pointer;font-family:var(--font);font-weight:600;transition:all .15s}
+.btn-done-xs{border-color:var(--green);color:var(--green)}.btn-done-xs:hover{background:var(--green-bg)}
+.btn-prog-xs{border-color:var(--amber);color:var(--amber)}.btn-prog-xs:hover{background:var(--amber-bg)}
+.btn-rst-xs{border-color:var(--border);color:var(--tx3)}.btn-rst-xs:hover{border-color:var(--tx2);color:var(--tx2)}
+.btn-edit-xs{border-color:var(--border);color:var(--accent)}.btn-edit-xs:hover{background:var(--bg-inset)}
+.btn-del-xs{border-color:#fca5a5;color:#dc2626}.btn-del-xs:hover{background:#fef2f2}
+[data-theme=dark] .btn-del-xs{border-color:#7f1d1d;color:#f87171}.[data-theme=dark] .btn-del-xs:hover{background:#2d0a14}
+/* Add milestone button */
+.add-ms-btn{display:flex;align-items:center;gap:.5rem;margin-top:1.25rem;padding:.55rem 1rem;font-size:.82rem;font-weight:600;color:var(--accent);background:var(--bg-card);border:1px dashed var(--accent);border-radius:var(--r);cursor:pointer;font-family:var(--font);transition:all .15s;box-shadow:var(--shadow-s)}
+.add-ms-btn:hover{background:var(--bg-inset);box-shadow:var(--shadow-m)}
+/* Edit/add modal extras */
+.modal select{width:100%;padding:.5rem .7rem;background:var(--bg-inset);border:1px solid var(--border);border-radius:6px;color:var(--tx);font-family:var(--font);font-size:.85rem;margin-bottom:.8rem;outline:none;transition:border-color .15s}
+.modal select:focus{border-color:var(--accent)}
+.modal-2col{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.stretch-tag{display:inline-flex;align-items:center;gap:.3rem;font-size:.65rem;font-weight:700;padding:.1rem .45rem;background:#fdf4ff;border:1px solid #d8b4fe;border-radius:4px;color:#6e40c9;margin-left:.4rem}
+[data-theme=dark] .stretch-tag{background:#2a0f4a;border-color:#5b21b6;color:#c084fc}
 
-    /* =============================================
-       MILESTONES
-    ============================================= */
-    #milestones { background: var(--bg-subtle); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .ms-summary {
-      display: flex; flex-wrap: wrap; gap: 1.5rem;
-      margin-bottom: 0.75rem;
-    }
-    .ms-stat { font-size: 0.82rem; color: var(--text-secondary); }
-    .ms-stat strong { color: var(--text-primary); }
-    .progress-bar-wrap {
-      width: 100%; height: 6px;
-      background: var(--border); border-radius: 3px;
-      margin-bottom: 2.5rem; overflow: hidden;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
-      border-radius: 3px; transition: width 0.8s ease;
-    }
+/* ── METRICS ─────────────────────────────────────────────────────── */
+#metrics{background:var(--bg)}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.7rem;margin-top:1.6rem}
+.metric-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem 1.1rem;text-align:center;box-shadow:var(--shadow-s);transition:box-shadow .2s,transform .2s}
+.metric-card:hover{box-shadow:var(--shadow-m);transform:translateY(-2px)}
+.metric-icon{font-size:1.5rem;margin-bottom:.5rem}
+.metric-val{font-size:2rem;font-weight:800;color:var(--accent);line-height:1;outline:none;border-radius:4px;padding:0 2px;cursor:text;transition:background .15s;display:inline-block;min-width:2ch}
+.metric-val:focus{background:var(--bg-inset)}
+.metric-label{font-size:.76rem;font-weight:700;color:var(--tx);margin-top:.3rem}
+.metric-note{font-size:.66rem;color:var(--tx3);margin-top:.18rem}
 
-    /* Timeline */
-    .timeline { position: relative; padding-left: 0; }
-    .tl-item {
-      display: flex; gap: 1.25rem;
-      margin-bottom: 1rem; position: relative;
-    }
-    /* vertical connector */
-    .tl-item:not(:last-child) .tl-dot-col::after {
-      content: '';
-      position: absolute;
-      left: 50%; top: 22px; bottom: -1rem;
-      width: 2px; transform: translateX(-50%);
-      background: var(--border-muted);
-    }
-    .tl-dot-col {
-      position: relative; flex-shrink: 0;
-      width: 40px; display: flex;
-      justify-content: center; padding-top: 3px;
-    }
-    .tl-dot {
-      width: 20px; height: 20px; border-radius: 50%;
-      border: 2.5px solid; background: var(--bg-card);
-      position: relative; z-index: 1; flex-shrink: 0;
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .tl-dot:hover { transform: scale(1.2); }
-    .tl-dot.done    { background: var(--green); border-color: var(--green); }
-    .tl-dot.ongoing { border-color: var(--amber); animation: dotGlow 2s infinite; }
-    .tl-dot.planned { border-color: var(--border); }
-    @keyframes dotGlow {
-      0%,100% { box-shadow: 0 0 0 0 rgba(210,153,34,0); }
-      50%      { box-shadow: 0 0 0 5px rgba(210,153,34,0.3); }
-    }
-    .tl-card {
-      flex: 1;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1rem 1.25rem;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.2s;
-    }
-    .tl-card:hover { box-shadow: var(--shadow-md); }
-    .tl-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.3rem; }
-    .tl-title { font-size: 0.92rem; font-weight: 700; }
-    .badge {
-      font-size: 0.67rem; font-weight: 700;
-      letter-spacing: 0.04em; text-transform: uppercase;
-      padding: 0.15rem 0.5rem; border-radius: 4px;
-      border: 1px solid; white-space: nowrap; flex-shrink: 0;
-    }
-    .badge.done    { color: var(--green);  background: var(--green-bg);  border-color: var(--green-border); }
-    .badge.ongoing { color: var(--amber);  background: var(--amber-bg);  border-color: var(--amber-border); }
-    .badge.planned { color: var(--text-muted); background: var(--gray-bg); border-color: var(--gray-border); }
-    .tl-desc { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
-    .tl-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
-    .tl-day { font-size: 0.7rem; color: var(--text-muted); font-family: var(--mono); }
-    .tl-done-at { font-size: 0.7rem; color: var(--green); font-family: var(--mono); }
-    .tl-notes { font-size: 0.78rem; color: var(--accent); font-style: italic; margin-top: 0.4rem; }
-    .tl-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
-    .btn-xs {
-      font-size: 0.7rem; padding: 0.22rem 0.6rem;
-      border-radius: 5px; border: 1px solid; background: transparent;
-      cursor: pointer; font-family: var(--font); font-weight: 600;
-      transition: all 0.15s;
-    }
-    .btn-done-xs    { border-color: var(--green); color: var(--green); }
-    .btn-done-xs:hover { background: var(--green-bg); }
-    .btn-prog-xs    { border-color: var(--amber); color: var(--amber); }
-    .btn-prog-xs:hover { background: var(--amber-bg); }
-    .btn-reset-xs   { border-color: var(--border); color: var(--text-muted); }
-    .btn-reset-xs:hover { border-color: var(--text-secondary); color: var(--text-secondary); }
+/* ── MODAL ───────────────────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.6rem;width:min(440px,92vw);box-shadow:var(--shadow-m);transform:scale(.96);transition:transform .2s}
+.overlay.open .modal{transform:scale(1)}
+.modal h4{font-size:.97rem;font-weight:700;margin-bottom:.18rem}
+.modal-sub{font-size:.78rem;color:var(--tx2);margin-bottom:1.1rem}
+.modal label{display:block;font-size:.76rem;font-weight:600;color:var(--tx2);margin-bottom:.28rem}
+.modal input,.modal textarea{width:100%;padding:.5rem .7rem;background:var(--bg-inset);border:1px solid var(--border);border-radius:6px;color:var(--tx);font-family:var(--font);font-size:.85rem;margin-bottom:.8rem;outline:none;transition:border-color .15s}
+.modal input:focus,.modal textarea:focus{border-color:var(--accent)}
+.modal textarea{resize:vertical;min-height:65px}
+.modal-actions{display:flex;gap:.55rem;justify-content:flex-end}
+.btn-primary{padding:.42rem 1.05rem;background:var(--accent);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:.83rem;cursor:pointer;font-family:var(--font);transition:opacity .15s}
+.btn-primary:hover{opacity:.85}
+.btn-sec{padding:.42rem 1.05rem;background:transparent;color:var(--tx2);border:1px solid var(--border);border-radius:6px;font-weight:600;font-size:.83rem;cursor:pointer;font-family:var(--font);transition:border-color .15s}
+.btn-sec:hover{border-color:var(--tx2)}
 
-    /* =============================================
-       METRICS
-    ============================================= */
-    #metrics { background: var(--bg); }
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
-      gap: 0.75rem; margin-top: 1.75rem;
-    }
-    .metric-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem 1.25rem;
-      text-align: center;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.2s, transform 0.2s;
-    }
-    .metric-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-    .metric-icon { font-size: 1.6rem; margin-bottom: 0.6rem; }
-    .metric-value {
-      font-size: 2.1rem; font-weight: 800;
-      color: var(--accent); line-height: 1;
-      cursor: text; outline: none;
-      border-radius: 4px; padding: 0 2px;
-      transition: background 0.15s;
-    }
-    .metric-value:focus { background: var(--bg-subtle); }
-    .metric-label { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-top: 0.35rem; }
-    .metric-note  { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.2rem; }
-    .metrics-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 1rem; }
+/* ── FOOTER ──────────────────────────────────────────────────────── */
+footer{padding:1.75rem 2rem;text-align:center;background:var(--bg-card);border-top:1px solid var(--border);font-size:.78rem;color:var(--tx2)}
+footer a{color:var(--accent)}
+.footer-acts{display:flex;flex-wrap:wrap;justify-content:center;gap:.45rem;margin-top:.65rem}
+.btn-ghost{padding:.32rem .8rem;font-size:.72rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--tx2);cursor:pointer;font-family:var(--font);transition:all .15s}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+hr.div{border:none;border-top:1px solid var(--border);margin:0}
 
-    /* =============================================
-       MODAL
-    ============================================= */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 200; display: flex;
-      align-items: center; justify-content: center;
-      backdrop-filter: blur(4px);
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.2s;
-    }
-    .modal-overlay.open { opacity: 1; pointer-events: all; }
-    .modal {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px; padding: 1.75rem;
-      width: min(460px, 92vw);
-      box-shadow: var(--shadow-md);
-      transform: scale(0.96);
-      transition: transform 0.2s;
-    }
-    .modal-overlay.open .modal { transform: scale(1); }
-    .modal h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; }
-    .modal-sub { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.25rem; }
-    .modal label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.3rem; }
-    .modal input, .modal textarea {
-      width: 100%; padding: 0.55rem 0.75rem;
-      background: var(--bg-subtle);
-      border: 1px solid var(--border); border-radius: 6px;
-      color: var(--text-primary); font-family: var(--font);
-      font-size: 0.875rem; margin-bottom: 0.9rem;
-      outline: none; transition: border-color 0.15s;
-    }
-    .modal input:focus, .modal textarea:focus { border-color: var(--accent); }
-    .modal textarea { resize: vertical; min-height: 70px; }
-    .modal-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
-    .btn-primary {
-      padding: 0.45rem 1.1rem;
-      background: var(--accent); color: #fff;
-      border: none; border-radius: 6px;
-      font-weight: 700; font-size: 0.85rem;
-      cursor: pointer; font-family: var(--font);
-      transition: opacity 0.15s;
-    }
-    .btn-primary:hover { opacity: 0.85; }
-    .btn-secondary {
-      padding: 0.45rem 1.1rem; background: transparent;
-      color: var(--text-secondary);
-      border: 1px solid var(--border); border-radius: 6px;
-      font-weight: 600; font-size: 0.85rem;
-      cursor: pointer; font-family: var(--font);
-      transition: border-color 0.15s;
-    }
-    .btn-secondary:hover { border-color: var(--text-secondary); }
-
-    /* =============================================
-       FOOTER
-    ============================================= */
-    footer {
-      padding: 2rem; text-align: center;
-      background: var(--bg-subtle);
-      border-top: 1px solid var(--border);
-      font-size: 0.8rem; color: var(--text-secondary);
-    }
-    footer a { color: var(--accent); }
-    .footer-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 0.75rem; }
-    .btn-ghost {
-      padding: 0.35rem 0.85rem; font-size: 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 6px; background: var(--bg-card);
-      color: var(--text-secondary); cursor: pointer;
-      font-family: var(--font); transition: all 0.15s;
-    }
-    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* =============================================
-       RESPONSIVE
-    ============================================= */
-    @media (max-width: 720px) {
-      .hero-grid { grid-template-columns: 1fr; }
-      .ring-wrap { display: none; }
-      .slide-body { grid-template-columns: 1fr; }
-      .nav-links { display: none; }
-      section { padding: 4rem 1.25rem; }
-    }
-    @media print {
-      nav, .slides-nav, .tl-actions, .footer-actions, .theme-toggle { display: none !important; }
-      section { break-inside: avoid; page-break-inside: avoid; }
-    }
-  </style>
+/* ── RESPONSIVE ──────────────────────────────────────────────────── */
+@media(max-width:768px){
+  .hero-grid{grid-template-columns:1fr}.ring-wrap{display:none}
+  .slide-body{grid-template-columns:1fr}.slide-left{border-right:none;border-bottom:1px solid var(--border-subtle)}
+  .slide-right{padding:1rem 1.25rem}
+  .nav-links{display:none}
+  section{padding:3.5rem 1.25rem}
+}
+@media print{nav,.slides-nav,.tl-actions,.footer-acts,.theme-btn{display:none!important}section{break-inside:avoid}}
+</style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="nav-brand">⬡ AI Parallax Tracer</div>
   <ul class="nav-links">
@@ -602,41 +262,38 @@
     <li><a href="#metrics">Metrics</a></li>
   </ul>
   <div class="nav-right">
+    <div class="sync-indicator" id="syncIndicator" style="display:none">
+      <span class="sync-dot"></span><span id="syncLabel">Synced</span>
+    </div>
     <span class="nav-badge">Hackathon 2026</span>
-    <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode" onclick="toggleTheme()">🌙</button>
+    <button class="theme-btn" id="themeBtn" title="Toggle theme" onclick="toggleTheme()">🌙</button>
   </div>
 </nav>
 
-<!-- ===================== HERO ===================== -->
+<!-- ═══ HERO ═══ -->
 <section id="hero">
   <div class="container">
     <div class="hero-grid">
       <div>
-        <div class="hero-eyebrow"><span class="live-dot"></span>Live Dashboard · Hackathon 2026</div>
+        <div class="hero-eyebrow"><span class="live-dot"></span>Live Dashboard · Auto-synced from commits</div>
         <h1>AI Parallax Signal<br>Traceability Engine</h1>
-        <p class="hero-tagline">
-          Cross-ECU signal chain visibility — from RAL bus frame to Kotlin app subscriber,
-          traced end-to-end across 4+ repositories using KB + AI skills.
-        </p>
+        <p class="hero-sub">Cross-ECU signal chain visibility — from RAL bus frame to Kotlin app subscriber, traced end-to-end across 4+ repositories using KB + AI skills.</p>
         <div class="hero-tags">
-          <span class="tag">EGW2 Bridge</span>
-          <span class="tag">Vehicle Model (RVM)</span>
-          <span class="tag">RAL Bus Signals</span>
-          <span class="tag">KB + AI Skills</span>
-          <span class="tag">Cytoscape Graph</span>
-          <span class="tag">NATS Subjects</span>
+          <span class="tag">EGW2 Bridge</span><span class="tag">Vehicle Model (RVM)</span>
+          <span class="tag">RAL Bus Signals</span><span class="tag">KB + AI Skills</span>
+          <span class="tag">Cytoscape Graph</span><span class="tag">NATS Subjects</span>
           <span class="tag">v1_0 variant</span>
         </div>
       </div>
       <div class="ring-wrap">
         <div class="ring-label-top">Overall Progress</div>
         <div class="ring-container">
-          <svg class="ring-svg" id="ringSvg" width="156" height="156" viewBox="0 0 156 156">
-            <circle class="ring-track" cx="78" cy="78" r="63"/>
-            <circle class="ring-fill"  id="ringFill" cx="78" cy="78" r="63"
-              stroke-dasharray="395.84" stroke-dashoffset="395.84"/>
+          <svg class="ring-svg" width="150" height="150" viewBox="0 0 150 150">
+            <circle class="ring-track" cx="75" cy="75" r="62"/>
+            <circle class="ring-fill" id="ringFill" cx="75" cy="75" r="62"
+              stroke-dasharray="389.56" stroke-dashoffset="389.56"/>
           </svg>
-          <div class="ring-center-text">
+          <div class="ring-center">
             <div class="ring-pct" id="ringPct">0%</div>
             <div class="ring-sub">done</div>
           </div>
@@ -647,599 +304,851 @@
   </div>
 </section>
 
-<!-- ===================== PROBLEM ===================== -->
+<!-- ═══ PROBLEM ═══ -->
 <section id="problem">
   <div class="container">
     <div class="section-label">01 — Problem Statement</div>
     <h2>The Signal Chain Is Completely Invisible</h2>
-    <p class="lead">
-      The Parallax framework enables cross-ECU signal communication via a Vehicle Model (RVM),
-      but the full signal chain is buried across <strong>4+ repositories</strong> and <strong>3+ code generators</strong>.
-      No single tool shows the complete path from a CAN frame to the Kotlin app that reads it.
-    </p>
-
-    <div class="signal-chain-wrap">
+    <p class="lead">The Parallax framework powers cross-ECU communication via a Vehicle Model (RVM), but the full signal chain spans <strong>4+ repositories</strong> and <strong>3+ code generators</strong> with no unified view.</p>
+    <div class="chain-wrap">
       <div class="chain">
-        <div class="chain-node">
-          <div class="chain-box app">Kotlin App</div>
-          <div class="chain-repo">ecu/lagvm/apps/</div>
-        </div>
-        <div class="chain-arrow">
-          <div class="chain-line"></div>
-          <div class="chain-label">NATS Subject<br>SERVICE.VSVC.*</div>
-        </div>
-        <div class="chain-node">
-          <div class="chain-box rvm">RVM Vehicle<br>Model</div>
-          <div class="chain-repo">interfaces/parallax/</div>
-        </div>
-        <div class="chain-arrow">
-          <div class="chain-line"></div>
-          <div class="chain-label">routing-rules<br>YAML mapping</div>
-        </div>
-        <div class="chain-node">
-          <div class="chain-box egw">EGW2 Bridge</div>
-          <div class="chain-repo">elpis-gw-2/</div>
-        </div>
-        <div class="chain-arrow">
-          <div class="chain-line"></div>
-          <div class="chain-label">Elpis signal<br>CAN/ETH PDU</div>
-        </div>
-        <div class="chain-node">
-          <div class="chain-box zonal">Zonal ECU<br>FZC / BZC</div>
-          <div class="chain-repo">vwg/project/auto/</div>
-        </div>
+        <div class="chain-node"><div class="cbox app">Kotlin App</div><div class="crepo">ecu/lagvm/apps/</div></div>
+        <div class="carr"><div class="carr-line"></div><div class="carr-label">NATS Subject<br>SERVICE.VSVC.*</div></div>
+        <div class="chain-node"><div class="cbox rvm">RVM Vehicle<br>Model</div><div class="crepo">interfaces/parallax/</div></div>
+        <div class="carr"><div class="carr-line"></div><div class="carr-label">routing-rules<br>YAML mapping</div></div>
+        <div class="chain-node"><div class="cbox egw">EGW2 Bridge</div><div class="crepo">elpis-gw-2/</div></div>
+        <div class="carr"><div class="carr-line"></div><div class="carr-label">Elpis signal<br>CAN/ETH PDU</div></div>
+        <div class="chain-node"><div class="cbox zon">Zonal ECU<br>FZC / BZC</div><div class="crepo">vwg/project/auto/</div></div>
       </div>
-      <div class="chain-caption">
-        Signal chain spans <strong>4+ repos</strong> · <strong>3 code generators</strong> · <strong>5 file types</strong>
-        — with <strong>zero unified view</strong> today
-      </div>
+      <div class="chain-caption">Signal chain spans <strong>4+ repos · 3 code generators · 5 file types</strong> — with <strong>zero unified view</strong> today</div>
     </div>
-
     <div class="pain-grid">
-      <div class="pain-card">
-        <div class="pain-icon">🔍</div>
-        <div class="pain-title">No End-to-End Trace</div>
-        <div class="pain-desc">Which app reads signal X? Which ECU sends raw frame Y? No tool answers these in a single query.</div>
-      </div>
-      <div class="pain-card">
-        <div class="pain-icon">💥</div>
-        <div class="pain-title">Hidden Impact Analysis</div>
-        <div class="pain-desc">When a property changes, what signals and services are transitively affected? Nobody knows without reading 4 codebases.</div>
-      </div>
-      <div class="pain-card">
-        <div class="pain-icon">🗂️</div>
-        <div class="pain-title">Silent Variant Drift</div>
-        <div class="pain-desc">Does <code>fan_speed</code> exist in v1_0 but not v2_1? RAL files diverge across variants with no visibility.</div>
-      </div>
-      <div class="pain-card">
-        <div class="pain-icon">⏳</div>
-        <div class="pain-title">Manual Archaeology</div>
-        <div class="pain-desc">Engineers spend ~2.5 hrs grepping across repos to map a single signal. Pure friction — no value, high error rate.</div>
-      </div>
+      <div class="pain-card"><div class="pain-icon">🔍</div><div class="pain-title">No End-to-End Trace</div><div class="pain-desc">Which app reads signal X? Which ECU sends raw frame Y? No tool answers these in a single query today.</div></div>
+      <div class="pain-card"><div class="pain-icon">💥</div><div class="pain-title">Hidden Impact Analysis</div><div class="pain-desc">When a property changes, what signals and services are transitively affected? Nobody knows without reading 4 codebases.</div></div>
+      <div class="pain-card"><div class="pain-icon">🗂️</div><div class="pain-title">Silent Variant Drift</div><div class="pain-desc">Does <code>fan_speed</code> exist in v1_0 but not v2_1? RAL files diverge across variants with no visibility.</div></div>
+      <div class="pain-card"><div class="pain-icon">⏳</div><div class="pain-title">Manual Archaeology</div><div class="pain-desc">Engineers spend ~2.5 hrs grepping across repos to map a single signal. Pure friction — high error rate, zero added value.</div></div>
     </div>
   </div>
 </section>
 
-<!-- ===================== SOLUTION ===================== -->
+<!-- ═══ SOLUTION SLIDES ═══ -->
 <section id="solution">
   <div class="container">
     <div class="section-label">02 — Solution Approach</div>
     <h2>AI-Powered Signal Traceability</h2>
     <p class="lead">Four capabilities that together make the invisible signal chain visible, queryable, and safe to refactor.</p>
-
     <div class="slides-outer">
       <div class="slides-track" id="slidesTrack">
 
         <!-- SLIDE 1 -->
         <div class="slide">
-          <div class="slide-num">01 / 04</div>
-          <h3>Multi-Layer Signal Parsing</h3>
+          <div class="slide-head">
+            <div class="slide-eyebrow">01 / 04 · Parsing</div>
+            <h3>Multi-Layer Signal Parsing</h3>
+            <p class="slide-intro">Five purpose-built parsers extract structured data from every layer of the Parallax signal chain — no generated code or API calls required. All parsers are orchestrated by a single scanner entry point.</p>
+          </div>
           <div class="slide-body">
-            <div class="slide-text">
-              <p>Five purpose-built parsers extract structured data from every layer of the Parallax signal chain — no generated code or API needed.</p>
-              <ul class="bullets">
-                <li><strong>RvmParser</strong> — extracts properties &amp; services from <code>*.rvm</code> YAML, derives NATS subjects algorithmically</li>
-                <li><strong>RoutingRulesParser</strong> — maps Elpis ↔ Parallax namespace from <code>routing-rules/*.yaml</code></li>
-                <li><strong>RalBusParser</strong> — captures PDU IDs, sender/receiver ECUs, cycle times from <code>*.bus.ral</code></li>
-                <li><strong>AppCodeParser</strong> — grep-based Kotlin analysis: <code>buildFlow()</code> / <code>requestTyped()</code> calls</li>
-                <li><strong>OrchestratorParser</strong> — resolves fan-out: 1 service call → N downstream edges</li>
-              </ul>
+            <div class="slide-left">
+              <div class="steps">
+                <div class="step">
+                  <div class="step-badge l1">L1</div>
+                  <div class="step-content">
+                    <div class="step-title">RvmParser — Vehicle Model</div>
+                    <div class="step-desc">Reads <code>*.rvm</code> YAML files; extracts properties and services; derives NATS subjects algorithmically (no codegen)</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l2">L2</div>
+                  <div class="step-content">
+                    <div class="step-title">RoutingRulesParser — EGW2 Bridge</div>
+                    <div class="step-desc">Maps Elpis ↔ Parallax namespace from <code>routing-rules/*.yaml</code>; classifies direction per route</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l3">L3</div>
+                  <div class="step-content">
+                    <div class="step-title">RalBusParser — CAN/ETH Signals</div>
+                    <div class="step-desc">Captures PDU IDs, sender ECU, receiver ECUs, bus type and cycle time from <code>*.bus.ral</code></div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l4">L4</div>
+                  <div class="step-content">
+                    <div class="step-title">AppCodeParser — Kotlin Apps</div>
+                    <div class="step-desc">Grep-based analysis finds <code>buildFlow()</code>, <code>requestTyped()</code> and <code>handleTypedRequests()</code> call sites</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l5">L5</div>
+                  <div class="step-content">
+                    <div class="step-title">OrchestratorParser — Fan-out</div>
+                    <div class="step-desc">Resolves fan-out recipes: one incoming service call expands to N downstream EGW2 signal edges</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="slide-visual">L1  RVM Vehicle Model
-    └─ namespace / property / service
-    └─ owner ECU, scope
-    └─ NATS subject (derived)
-
-L2  EGW2 Routing Rules
-    └─ Elpis signal ↔ Parallax subject
-    └─ direction: App→Zonal or reverse
-
-L3  RAL Bus Signals
-    └─ PDU ID, CAN/ETH frame
-    └─ sender ECU, receivers[]
-    └─ cycle_time_ms
-
-L4  App Code (Kotlin)
-    └─ buildFlow("STATE.*")
-    └─ requestTyped("SERVICE.*")
-
-L5  Orchestrator
-    └─ incoming_service
-    └─ outgoing_services[6]</div>
+            <div class="slide-right">
+              <div class="mermaid-box">
+                <div class="mermaid" id="d1">
+flowchart TD
+    SRC(["📁 4+ Source Repos"])
+    SC["⚙️ ParallaxScanner\norchestrator"]
+    subgraph P["Five Signal Parsers"]
+      direction LR
+      P1["RvmParser\n.rvm"]
+      P2["RouteParser\n.yaml"]
+      P3["RalParser\n.ral"]
+      P4["AppParser\n.kt"]
+      P5["OrchParser\n.kt"]
+    end
+    DB[("🗄 PostgreSQL\nSignal Graph")]
+    SRC --> SC --> P --> DB
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- SLIDE 2 -->
         <div class="slide">
-          <div class="slide-num">02 / 04</div>
-          <h3>Graph-Based Flow Tracing</h3>
+          <div class="slide-head">
+            <div class="slide-eyebrow">02 / 04 · Graph</div>
+            <h3>Signal Flow Graph — 3 Confirmed Patterns</h3>
+            <p class="slide-intro">Parsed data populates a directed signal graph. Edges encode three flow patterns confirmed from the starter codebase: command, state, and fan-out. The graph powers BFS blast-radius and impact analysis.</p>
+          </div>
           <div class="slide-body">
-            <div class="slide-text">
-              <p>Parsed data populates a directed signal graph with nodes for signals, apps, ECUs and RVM entries — edges encode 3 confirmed flow patterns.</p>
-              <ul class="bullets">
-                <li><strong>Pattern A</strong> — App → EGW2 → Zonal (command: e.g. <code>setFanSpeed</code>)</li>
-                <li><strong>Pattern B</strong> — Zonal → EGW2 → App (state readout: e.g. <code>fanSpeed</code>)</li>
-                <li><strong>Pattern C</strong> — App → Orchestrator → EGW2 × N (fan-out: <code>setDriveMode</code> → 6 services)</li>
-                <li>Graph stored in PostgreSQL as <code>parallax_flow_edges</code> with confidence scores</li>
-                <li>Cytoscape.js visualization with live traversal via MCP tool calls</li>
-              </ul>
+            <div class="slide-left">
+              <div class="steps">
+                <div class="step">
+                  <div class="step-badge l1">A</div>
+                  <div class="step-content">
+                    <div class="step-title">Pattern A — Command (App → Zonal)</div>
+                    <div class="step-desc">App publishes <code>SERVICE.VSVC.*</code> → EGW2 translates → Zonal ECU CAN frame (e.g. <code>setFanSpeed</code> → <code>0x700</code>)</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l2">B</div>
+                  <div class="step-content">
+                    <div class="step-title">Pattern B — State (Zonal → App)</div>
+                    <div class="step-desc">Zonal ECU sends CAN frame → EGW2 translates → App subscribes <code>STATE.VEHICLE.*</code> (e.g. <code>fan_speed</code> readout)</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l3">C</div>
+                  <div class="step-content">
+                    <div class="step-title">Pattern C — Fan-out (Orchestrator)</div>
+                    <div class="step-desc">App calls Orchestrator → recipe expands to N parallel EGW2 service calls (e.g. <code>setDriveMode</code> → 6 ECU signals)</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l0">DB</div>
+                  <div class="step-content">
+                    <div class="step-title">parallax_flow_edges — with confidence scores</div>
+                    <div class="step-desc">Graph stored in PostgreSQL; BFS traversal enables blast-radius and variant-diff queries via Cytoscape.js</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="slide-visual">App ──NATS──▶ RVM Node
-                         │
-              routing-rules YAML
-                         │
-                         ▼
-             Elpis Signal (PDU)
-                         │
-              RAL: sender=XMMDROID
-              receivers=[FZC, BZC]
-                         │
-                         ▼
-            Zonal ECU hardware
-
-Fan-out (Pattern C):
-  App ──▶ Orchestrator
-              ├─▶ EGW2 ──▶ FZC
-              ├─▶ EGW2 ──▶ BZC
-              └─▶ EGW2 ──▶ CZC</div>
+            <div class="slide-right">
+              <div class="mermaid-box">
+                <div class="mermaid" id="d2">
+flowchart LR
+    subgraph A["⬇ Pattern A — Command"]
+      direction LR
+      Aa["App"] -->|"SERVICE.VSVC"| Ab["EGW2"] -->|"CAN 0x700"| Ac["FZC"]
+    end
+    subgraph B["⬆ Pattern B — State"]
+      direction LR
+      Ba["FZC"] -->|"CAN 0x701"| Bb["EGW2"] -->|"STATE.*"| Bc["App"]
+    end
+    subgraph C["⤢ Pattern C — Fan-out"]
+      direction LR
+      Ca["App"] --> Cb["Orch"] -->|"×N"| Cc["EGW2"]
+    end
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- SLIDE 3 -->
         <div class="slide">
-          <div class="slide-num">03 / 04</div>
-          <h3>AI Skills for Deep Analysis</h3>
+          <div class="slide-head">
+            <div class="slide-eyebrow">03 / 04 · AI Skills</div>
+            <h3>AI Skills + MCP Tool Integration</h3>
+            <p class="slide-intro">KB AI skills wrap the signal graph with LLM-powered analysis, answering questions no SQL query can answer alone. Results surface via REST API, Cytoscape graph UI, and a callable MCP tool.</p>
+          </div>
           <div class="slide-body">
-            <div class="slide-text">
-              <p>KB AI skills wrap the signal graph with LLM-powered analysis — answering questions no SQL query can answer alone.</p>
-              <ul class="bullets">
-                <li><strong>Signal trace skill</strong> — "Trace all signals in climate domain" → full dependency chain in seconds</li>
-                <li><strong>Impact analysis</strong> — "What apps break if PDU 0x700 changes?" → backward graph traversal</li>
-                <li><strong>Variant diff</strong> — Compare v1_0 vs v2_1 signal coverage: missing / new / changed entries</li>
-                <li><strong>MCP tool</strong> — <code>parallax_trace(signal)</code> callable from IDE, CI, or chat interface</li>
-                <li><strong>Git provenance</strong> — every signal linked to commit SHA + file + line for full auditability</li>
-              </ul>
+            <div class="slide-left">
+              <div class="steps">
+                <div class="step">
+                  <div class="step-badge l1">01</div>
+                  <div class="step-content">
+                    <div class="step-title">Skill Collector — Evidence Gathering</div>
+                    <div class="step-desc">Pre-fetches signal graph context from PostgreSQL before LLM prompt assembly; scoped per-domain or per-variant</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l2">02</div>
+                  <div class="step-content">
+                    <div class="step-title">LLM Analysis — Trace &amp; Impact Skills</div>
+                    <div class="step-desc">Signal trace, blast-radius, variant diff, and pattern detection skills defined via SKILL.md contracts and schemas</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l3">03</div>
+                  <div class="step-content">
+                    <div class="step-title">Skill Populator — Validate &amp; Persist</div>
+                    <div class="step-desc">Validates LLM output against schema; writes to <code>structured_views</code>; surfaces via 4 tab sections in the UI</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l4">04</div>
+                  <div class="step-content">
+                    <div class="step-title">MCP Tool — <code>parallax_trace(signal)</code></div>
+                    <div class="step-desc">Callable from IDE, CI pipeline, or chat: returns full chain with Git SHA, confidence score, affected apps, and blast radius</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="slide-visual">// MCP Tool call
-parallax_trace("fan_speed") →
-{
-  rvm_node:       "climate.cabin.fan_speed",
-  nats_subject:   "STATE.VEHICLE.*.climate...",
-  elpis_signal:   "VWG_HVAC_UI_Status",
-  pdu_id:         "0x701",
-  sender_ecu:     "FZC",
-  receiver_ecus:  ["XMMDROID"],
-  apps_subscribed:[
-    "HvacApp.kt:247",
-    "ClimateWidget.kt:89"
-  ],
-  pattern:        "B",
-  confidence:     0.97
-}</div>
+            <div class="slide-right">
+              <div class="mermaid-box">
+                <div class="mermaid" id="d3">
+flowchart TD
+    DB[("KB\nPostgreSQL")]
+    COL["Collector\nevidence"]
+    LLM(["LLM\nAnalysis"])
+    POP["Populator\nvalidate + store"]
+    SV[("Structured\nViews")]
+    MCP["parallax_trace()\nMCP Tool"]
+    UI["Cytoscape\nGraph UI"]
+    API["REST API\n/api/parallax"]
+    DB --> COL --> LLM --> POP --> SV
+    SV --> MCP & UI & API
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- SLIDE 4 -->
         <div class="slide">
-          <div class="slide-num">04 / 04</div>
-          <h3>Impact &amp; Value for the Team</h3>
+          <div class="slide-head">
+            <div class="slide-eyebrow">04 / 04 · Impact</div>
+            <h3>Measurable Impact for the Development Team</h3>
+            <p class="slide-intro">Beyond a hackathon prototype — Parallax Tracer fills a real gap in the daily toolchain of every engineer working on Parallax-based vehicle software.</p>
+          </div>
           <div class="slide-body">
-            <div class="slide-text">
-              <p>Beyond a hackathon prototype — this fills a real gap in the development toolchain for Parallax-based vehicle software.</p>
-              <ul class="bullets">
-                <li><strong>Hours → seconds</strong>: Signal archaeology that takes an engineer ~2.5 hrs is now a single MCP query</li>
-                <li><strong>Safer refactoring</strong>: Full impact analysis before changing any routing rule or RVM property</li>
-                <li><strong>Faster onboarding</strong>: New engineers explore the full signal flow interactively via graph UI</li>
-                <li><strong>CI integration</strong>: Automated check "did this commit break a signal path?" via <code>parallax_trace</code></li>
-                <li><strong>Extensible</strong>: Plugin architecture adds new layers (Proto, SomeIP) without changing the core</li>
-              </ul>
+            <div class="slide-left">
+              <div class="steps">
+                <div class="step">
+                  <div class="step-badge l1">⚡</div>
+                  <div class="step-content">
+                    <div class="step-title">Hours → Seconds per Signal Trace</div>
+                    <div class="step-desc">Signal archaeology that takes ~2.5 hrs of manual grepping across repos is replaced by a single <code>parallax_trace()</code> call returning the full chain in under 2 seconds</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l2">🛡</div>
+                  <div class="step-content">
+                    <div class="step-title">Safer Refactoring with Blast-Radius</div>
+                    <div class="step-desc">Before changing a routing rule or RVM property, engineers see the full set of affected apps, ECUs, and signals — preventing silent regressions</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l3">🚀</div>
+                  <div class="step-content">
+                    <div class="step-title">Faster Onboarding via Graph UI</div>
+                    <div class="step-desc">New engineers explore the full signal flow interactively in Cytoscape — understanding in minutes what previously took weeks of codebase reading</div>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-badge l4">🔁</div>
+                  <div class="step-content">
+                    <div class="step-title">CI Integration — Automated Signal Checks</div>
+                    <div class="step-desc">Plugs into CI pipelines: on every commit, verify no signal path is broken, no routing rule conflicts introduced, no variant drift added</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="slide-visual">Before (today):
-  grep -r "VWG_HVAC_UI_Status" \
-    firmware/ elpis-gw-2/ \
-    routing-rules/ lagvm/
-  → ~2.5 hours, error-prone
-
-After (Parallax Tracer):
-  parallax_trace("VWG_HVAC_UI_Status")
-  → Full chain in &lt; 2 seconds
-  → Git SHA, line numbers,
-     confidence scores, graph
-
-ROI per trace:    ~2.5 hrs saved
-Signals in scope: 50+ (v1_0)
-Potential impact: 100s hrs/sprint</div>
+            <div class="slide-right">
+              <div class="mermaid-box">
+                <div class="mermaid" id="d4">
+flowchart TD
+    subgraph NOW["❌ Before"]
+      direction TB
+      D1["Developer"] -->|"grep × 4 repos\n~2.5 hrs"| R1["Partial result\nError-prone"]
+    end
+    subgraph NEW["✅ Parallax Tracer"]
+      direction TB
+      D2["Developer"] -->|"parallax_trace()\n< 2 seconds"| R2["Full chain\nGit SHA · Confidence\nBlast radius + Graph"]
+    end
+    NOW -.->|"replaced by"| NEW
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
       </div><!-- /slides-track -->
     </div><!-- /slides-outer -->
-
     <div class="slides-nav">
       <button class="slide-btn" onclick="changeSlide(-1)">◀</button>
-      <div class="slide-dots" id="slideDots"></div>
+      <div class="dots" id="dots"></div>
       <button class="slide-btn" onclick="changeSlide(1)">▶</button>
     </div>
   </div>
 </section>
 
-<!-- ===================== MILESTONES ===================== -->
+<!-- ═══ MILESTONES ═══ -->
 <section id="milestones">
   <div class="container">
     <div class="section-label">03 — Progress Tracker</div>
     <h2>Hackathon Milestones</h2>
-    <p class="lead">Click <strong>Mark Done</strong> on any milestone to log it with a timestamp. All changes save locally in your browser.</p>
-    <div class="ms-summary" id="msSummary"></div>
-    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
-    <div class="timeline" id="timeline"></div>
+    <p class="lead">Auto-backfilled from git commits to <code>feature/parallax_tracer</code>. Click <strong>Mark Done</strong> to manually update any milestone with a timestamp and notes.</p>
+    <div class="ms-row" id="msSummary"></div>
+    <div class="pbar-wrap"><div class="pbar-fill" id="pbarFill"></div></div>
+    <div class="tl" id="tl"></div>
+    <button class="add-ms-btn" onclick="openAddModal()">
+      ＋ Add Milestone / Stretch Goal
+    </button>
   </div>
 </section>
 
-<!-- ===================== METRICS ===================== -->
+<!-- ═══ METRICS ═══ -->
 <section id="metrics">
   <div class="container">
     <div class="section-label">04 — Key Metrics</div>
     <h2>Solution at a Glance</h2>
-    <p class="lead">Click any number to edit it live — changes are saved automatically.</p>
+    <p class="lead">Click any number to edit it live — updates save automatically in your browser.</p>
     <div class="metrics-grid" id="metricsGrid"></div>
-    <p class="metrics-hint">💡 Click a number above to update it during the demo or pitch.</p>
   </div>
 </section>
 
-<hr class="divider">
-
-<!-- FOOTER -->
+<hr class="div">
 <footer>
-  <div>
-    <strong>AI Parallax Tracer</strong> · Hackathon 2026 ·
+  <div><strong>AI Parallax Tracer</strong> · Hackathon 2026 ·
     <a href="https://github.com/shravan-surya/ai-parallax-tracing" target="_blank">GitHub ↗</a>
   </div>
-  <div style="margin-top:0.35rem;font-size:0.7rem;color:var(--text-muted);">
-    Dashboard state auto-saved in browser localStorage · refresh-safe
+  <div style="margin-top:.3rem;font-size:.68rem;color:var(--tx3)">
+    State saved in browser localStorage · Auto-synced via GitHub Actions on push to feature/parallax_tracer
   </div>
-  <div class="footer-actions">
+  <div class="footer-acts">
     <button class="btn-ghost" onclick="exportState()">📋 Export State</button>
     <button class="btn-ghost" onclick="importState()">📂 Import State</button>
     <button class="btn-ghost" onclick="window.print()">🖨️ Print / PDF</button>
-    <button class="btn-ghost" onclick="resetAll()">🔄 Reset Defaults</button>
+    <button class="btn-ghost" onclick="resetAll()">🔄 Reset to Defaults</button>
   </div>
 </footer>
 
-<!-- MODAL -->
-<div class="modal-overlay" id="modalOverlay">
+<!-- MARK-DONE MODAL -->
+<div class="overlay" id="overlay">
   <div class="modal">
-    <h4 id="modalTitle">Mark Milestone as Done</h4>
-    <div class="modal-sub" id="modalSub"></div>
+    <h4 id="mTitle">Mark as Done</h4>
+    <div class="modal-sub" id="mSub"></div>
     <label>Completed at</label>
-    <input type="datetime-local" id="modalDt"/>
+    <input type="datetime-local" id="mDt"/>
     <label>Notes (optional)</label>
-    <textarea id="modalNotes" placeholder="What was achieved? Any links or blockers?"></textarea>
+    <textarea id="mNotes" placeholder="What was achieved? Any links or highlights?"></textarea>
     <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" id="modalConfirm">Mark Done ✓</button>
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="mConfirm">Mark Done ✓</button>
     </div>
   </div>
 </div>
 
-<!-- IMPORT TEXTAREA (hidden) -->
-<textarea id="importArea" style="display:none"></textarea>
+<!-- ADD / EDIT MILESTONE MODAL -->
+<div class="overlay" id="editOverlay">
+  <div class="modal" style="width:min(540px,94vw)">
+    <h4 id="editTitle">Add Milestone</h4>
+    <div class="modal-sub" id="editSub">Fill in the details below. New milestones are saved locally and persisted across refreshes.</div>
+
+    <label>Title <span style="color:#dc2626">*</span></label>
+    <input type="text" id="eTitle" placeholder="e.g. Proto Parser Integration"/>
+
+    <label>Description</label>
+    <textarea id="eDesc" placeholder="What will be built or demonstrated?" style="min-height:58px"></textarea>
+
+    <div class="modal-2col">
+      <div>
+        <label>Day / Timing</label>
+        <input type="text" id="eDay" placeholder="e.g. Day 3 · Morning"/>
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="eStatus">
+          <option value="planned">◷ Planned</option>
+          <option value="ongoing">⟳ In Progress</option>
+          <option value="done">✓ Done</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="eDoneSection" style="display:none">
+      <label>Completed at</label>
+      <input type="datetime-local" id="eDt"/>
+    </div>
+
+    <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;user-select:none;margin-bottom:.9rem">
+      <input type="checkbox" id="eStretch" style="width:auto;margin:0"/>
+      <span style="font-size:.8rem;font-weight:600;color:var(--tx2)">Mark as Stretch Goal <span class="stretch-tag">✦ Stretch</span></span>
+    </label>
+
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-primary" id="editConfirm">Save Milestone</button>
+    </div>
+  </div>
+</div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-//  EDIT THIS DATA BLOCK TO CHANGE MILESTONES / METRICS
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+//  EDITABLE DATA — update DEFAULT_MILESTONES and DEFAULT_METRICS
+//  to permanently change defaults (localStorage overrides these)
+// ═══════════════════════════════════════════════════════════════════
 
 const DEFAULT_MILESTONES = [
   {
-    id: 1,
-    title: "AI Parallax Tracing Brainstorming",
-    desc: "Concept ideation, problem scoping, architecture decisions, hackathon brief analysis",
-    day: "Day 1 · Morning",
-    status: "done",
-    completedAt: "2026-07-14T10:00",
-    notes: "Concept v3 produced. 3 signal patterns confirmed. 5-layer data model defined."
+    id:1, status:"done",
+    title:"Concept & Architecture Design",
+    desc:"Problem scoping, signal flow architecture, 3 patterns confirmed, 5-layer data model defined, hackathon concept v3 produced",
+    day:"Pre-hackathon · Jul 11", completedAt:"2026-07-11T17:05", notes:"", commit:""
   },
   {
-    id: 2,
-    title: "Create Signal Parser Files",
-    desc: "RVM, RAL bus, routing-rules YAML, Kotlin app code and orchestrator parsers — all 5 layers",
-    day: "Day 1 · Evening",
-    status: "done",
-    completedAt: "2026-07-14T18:00",
-    notes: "All 5 parsers complete with unit tests. Scanner orchestrator wired."
+    id:2, status:"done",
+    title:"Plugin Skeleton, DB Schema & REST Routes",
+    desc:"Plugin registry entry, initial DB migration (001_initial.sql), REST signal routes, tab registry extension with 4 viewer sections, bridge resolver importer",
+    day:"Pre-hackathon · Jul 11", completedAt:"2026-07-11T17:05", notes:"", commit:"16c51d8"
   },
   {
-    id: 3,
-    title: "Create AI Skills for Re-runs",
-    desc: "SKILL.md contracts, tab_registry sections, schema definitions for signal trace skills",
-    day: "Day 2 · Morning",
-    status: "ongoing",
-    completedAt: null,
-    notes: ""
+    id:3, status:"done",
+    title:"Signal Parsers — All 5 Layers",
+    desc:"RvmParser, RoutingRulesParser, RalBusParser, AppCodeParser, OrchestratorParser — all complete with unit tests and v1_0 variant scoping",
+    day:"Day 1 · Jul 15 17:13", completedAt:"2026-07-15T17:13", notes:"", commit:"3b3b0a9"
   },
   {
-    id: 4,
-    title: "Parallax Signal Mining — Code Walkthrough",
-    desc: "Run parsers on firmware codebase, validate graph edges, resolve edge cases in RAL/RVM data",
-    day: "Day 2 · Afternoon",
-    status: "planned",
-    completedAt: null,
-    notes: ""
+    id:4, status:"done",
+    title:"Signal Flow Graph Builder",
+    desc:"FlowGraphBuilder joins all parser tables into parallax_flow_edges with 4 edge types (bridge, state, command, fanout), confidence scores, and BFS blast-radius support",
+    day:"Day 1 · Jul 15 17:13", completedAt:"2026-07-15T17:13", notes:"", commit:"3b3b0a9"
   },
   {
-    id: 5,
-    title: "Parallax Signal Database Strategy",
-    desc: "Schema finalization, migration scripts, query API endpoints for signal graph traversal",
-    day: "Day 2 · Evening",
-    status: "planned",
-    completedAt: null,
-    notes: ""
+    id:5, status:"done",
+    title:"Git Provenance & Scan Tracking",
+    desc:"scan_runs table tracks every scanner invocation; repo_refs and file_manifest link every parsed signal back to its source commit SHA and file path",
+    day:"Day 1 · Jul 15 19:55", completedAt:"2026-07-15T19:55", notes:"", commit:"e2049e7"
   },
   {
-    id: 6,
-    title: "AI Parallax Tracing Demonstration",
-    desc: "Live trace demo, Cytoscape graph visualization, MCP tool integration walkthrough",
-    day: "Day 3 · Morning",
-    status: "planned",
-    completedAt: null,
-    notes: ""
+    id:6, status:"ongoing",
+    title:"AI Skills & SKILL.md Contracts",
+    desc:"Signal trace skill, blast-radius skill, variant-diff skill — SKILL.md contracts, tab_registry sections, schema validation, and populator wiring",
+    day:"Day 2 · Morning", completedAt:null, notes:"", commit:""
   },
   {
-    id: 7,
-    title: "AI Parallax Final Pitch",
-    desc: "Presentation to judges, live demo, Q&A, impact statement delivery",
-    day: "Day 3 · Afternoon",
-    status: "planned",
-    completedAt: null,
-    notes: ""
+    id:7, status:"planned",
+    title:"Live Signal Mining on Firmware Codebase",
+    desc:"Run scanner + parsers against the actual firmware repos; validate graph edge coverage; resolve RAL/RVM edge cases at scale",
+    day:"Day 2 · Afternoon", completedAt:null, notes:"", commit:""
+  },
+  {
+    id:8, status:"planned",
+    title:"MCP Tool — parallax_trace()",
+    desc:"Expose parallax_trace(signal) as an MCP tool callable from IDE, CI, and chat; return full chain with Git SHA, confidence, blast-radius and graph link",
+    day:"Day 2 · Evening", completedAt:null, notes:"", commit:""
+  },
+  {
+    id:9, status:"planned",
+    title:"Cytoscape Visualization & Final Demo",
+    desc:"Live interactive graph demo showing full signal chain traversal, blast-radius highlight, and variant diff — complete with judge Q&A walkthrough",
+    day:"Day 3 · All day", completedAt:null, notes:"", commit:""
   }
 ];
 
 const DEFAULT_METRICS = [
-  { id: "repos",    icon: "🗂️",  value: "4",    label: "Repos Covered",     note: "RVM · EGW2 · RAL · Kotlin apps" },
-  { id: "parsers",  icon: "⚙️",  value: "5",    label: "Signal Parsers",    note: "RVM · RAL · Routes · App · Orch" },
-  { id: "signals",  icon: "📡",  value: "50+",  label: "Signals in Scope",  note: "v1_0 — climate, dynamics, energy…" },
-  { id: "patterns", icon: "🔀",  value: "3",    label: "Flow Patterns",     note: "Command · State · Fan-out" },
-  { id: "tests",    icon: "✅",  value: "12",   label: "Tests Written",     note: "Parser + scanner unit tests" },
-  { id: "hrs",      icon: "⏱️",  value: "2.5h", label: "Saved / Trace",     note: "vs. manual grep archaeology" }
+  {id:"repos",   icon:"🗂️", value:"4",    label:"Repos Covered",      note:"RVM · EGW2 · RAL · Kotlin"},
+  {id:"parsers", icon:"⚙️", value:"5",    label:"Signal Parsers",     note:"L1–L5, all layers"},
+  {id:"signals", icon:"📡", value:"50+",  label:"Signals in Scope",   note:"v1_0 variant only"},
+  {id:"patterns",icon:"🔀", value:"3",    label:"Flow Patterns",      note:"Command · State · Fan-out"},
+  {id:"tests",   icon:"✅", value:"12",   label:"Tests Written",      note:"Parser unit tests"},
+  {id:"hrs",     icon:"⏱️", value:"2.5h", label:"Saved / Trace",      note:"vs. manual grep"},
 ];
 
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 
-const STORE = 'parallax_dash_v2';
+const STORE = 'parallax_dash_v3';
 
-function loadState() {
-  try {
-    const s = JSON.parse(localStorage.getItem(STORE) || '{}');
-    return {
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(STORE)||'{}');
+    return{
       milestones: s.milestones || structuredClone(DEFAULT_MILESTONES),
       metrics:    s.metrics    || structuredClone(DEFAULT_METRICS),
       theme:      s.theme      || 'light'
     };
-  } catch(e) {
-    return { milestones: structuredClone(DEFAULT_MILESTONES), metrics: structuredClone(DEFAULT_METRICS), theme: 'light' };
-  }
+  }catch(e){return{milestones:structuredClone(DEFAULT_MILESTONES),metrics:structuredClone(DEFAULT_METRICS),theme:'light'}}
 }
-
-function save() { localStorage.setItem(STORE, JSON.stringify(state)); }
-
+function save(){ localStorage.setItem(STORE, JSON.stringify(state)); }
 let state = loadState();
 
-// ── Theme ──────────────────────────────────────────────────────
-function applyTheme(t) {
+// ── Theme ────────────────────────────────────────────────────────
+function applyTheme(t){
   document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('themeToggle').textContent = t === 'dark' ? '☀️' : '🌙';
+  document.getElementById('themeBtn').textContent = t==='dark'?'☀️':'🌙';
+  // Re-render mermaid diagrams with matching theme
+  renderMermaid(t);
+}
+function toggleTheme(){
+  state.theme = state.theme==='dark'?'light':'dark';
+  applyTheme(state.theme); save();
 }
 
-function toggleTheme() {
-  state.theme = state.theme === 'dark' ? 'light' : 'dark';
-  applyTheme(state.theme);
-  save();
+// ── Mermaid ──────────────────────────────────────────────────────
+const DIAGRAMS = {
+  d1:`flowchart TD
+    SRC(["📁 4+ Source Repos"])
+    SC["⚙️ ParallaxScanner\\norchestrator"]
+    subgraph P["Five Signal Parsers"]
+      direction LR
+      P1["RvmParser\\n.rvm"]
+      P2["RouteParser\\n.yaml"]
+      P3["RalParser\\n.ral"]
+      P4["AppParser\\n.kt"]
+      P5["OrchParser\\n.kt"]
+    end
+    DB[("🗄 PostgreSQL\\nSignal Graph")]
+    SRC --> SC --> P --> DB`,
+  d2:`flowchart LR
+    subgraph A["⬇ Pattern A — Command"]
+      direction LR
+      Aa["App"] -->|"SERVICE.VSVC"| Ab["EGW2"] -->|"CAN 0x700"| Ac["FZC"]
+    end
+    subgraph B["⬆ Pattern B — State"]
+      direction LR
+      Ba["FZC"] -->|"CAN 0x701"| Bb["EGW2"] -->|"STATE.*"| Bc["App"]
+    end
+    subgraph C["⤢ Pattern C — Fan-out"]
+      direction LR
+      Ca["App"] --> Cb["Orch"] -->|"×N"| Cc["EGW2"]
+    end`,
+  d3:`flowchart TD
+    DB[("KB\\nPostgreSQL")]
+    COL["Collector\\nevidence"]
+    LLM(["LLM\\nAnalysis"])
+    POP["Populator\\nvalidate+store"]
+    SV[("Structured\\nViews")]
+    MCP["parallax_trace()\\nMCP Tool"]
+    UI["Cytoscape\\nGraph UI"]
+    API["REST API\\n/api/parallax"]
+    DB --> COL --> LLM --> POP --> SV
+    SV --> MCP & UI & API`,
+  d4:`flowchart TD
+    subgraph NOW["❌ Before"]
+      direction TB
+      D1["Developer"] -->|"grep × 4 repos\\n~2.5 hrs"| R1["Partial result\\nError-prone"]
+    end
+    subgraph NEW["✅ After"]
+      direction TB
+      D2["Developer"] -->|"parallax_trace()\\n< 2 seconds"| R2["Full chain\\nGit SHA · Confidence\\nBlast radius + Graph"]
+    end
+    NOW -.->|"replaced by"| NEW`
+};
+
+function renderMermaid(theme){
+  mermaid.initialize({startOnLoad:false, theme: theme==='dark'?'dark':'default', securityLevel:'loose'});
+  Object.entries(DIAGRAMS).forEach(([id, code])=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.removeAttribute('data-processed');
+    el.innerHTML = code;
+  });
+  mermaid.run({nodes: Object.keys(DIAGRAMS).map(id=>document.getElementById(id)).filter(Boolean)});
 }
 
-// ── Progress ring ──────────────────────────────────────────────
-function updateRing() {
+// ── Ring ─────────────────────────────────────────────────────────
+function updateRing(){
   const ms = state.milestones;
-  const done = ms.filter(m => m.status === 'done').length;
-  const pct  = Math.round((done / ms.length) * 100);
-  const circ = 395.84;
-  const offset = circ * (1 - pct / 100);
-  document.getElementById('ringFill').style.strokeDashoffset = offset;
-  document.getElementById('ringPct').textContent = pct + '%';
-  document.getElementById('ringCaption').textContent =
-    `${done} of ${ms.length} milestones complete`;
+  const done = ms.filter(m=>m.status==='done').length;
+  const pct  = Math.round(done/ms.length*100);
+  const circ = 389.56;
+  document.getElementById('ringFill').style.strokeDashoffset = circ*(1-pct/100);
+  document.getElementById('ringPct').textContent  = pct+'%';
+  document.getElementById('ringCaption').textContent = `${done} of ${ms.length} milestones complete`;
 }
 
-// ── Milestones ─────────────────────────────────────────────────
-function progress() {
-  const ms = state.milestones;
-  const done    = ms.filter(m => m.status === 'done').length;
-  const ongoing = ms.filter(m => m.status === 'ongoing').length;
-  return { done, ongoing, planned: ms.length - done - ongoing, total: ms.length,
-           pct: Math.round(done / ms.length * 100) };
+// ── Milestones ───────────────────────────────────────────────────
+function stats(){
+  const ms=state.milestones;
+  return{
+    done:ms.filter(m=>m.status==='done').length,
+    ongoing:ms.filter(m=>m.status==='ongoing').length,
+    planned:ms.filter(m=>m.status==='planned').length,
+    total:ms.length,
+    pct:Math.round(ms.filter(m=>m.status==='done').length/ms.length*100)
+  };
 }
 
-function renderTimeline() {
-  const { done, ongoing, planned, total, pct } = progress();
-  document.getElementById('msSummary').innerHTML =
+function renderTL(){
+  const {done,ongoing,planned,total,pct}=stats();
+  document.getElementById('msSummary').innerHTML=
     `<span class="ms-stat"><strong>${done}</strong> Done</span>
      <span class="ms-stat"><strong>${ongoing}</strong> In Progress</span>
      <span class="ms-stat"><strong>${planned}</strong> Planned</span>
      <span class="ms-stat"><strong>${pct}%</strong> Complete</span>`;
-  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('pbarFill').style.width=pct+'%';
 
-  document.getElementById('timeline').innerHTML = state.milestones.map(m => {
-    const badgeText = { done: '✓ Done', ongoing: '⟳ In Progress', planned: '◷ Planned' }[m.status];
-    const doneAt = m.completedAt ? `<span class="tl-done-at">✓ ${fmt(m.completedAt)}</span>` : '';
-    const notes  = m.notes ? `<div class="tl-notes">"${m.notes}"</div>` : '';
-    const acts   = [];
-    if (m.status !== 'done')    acts.push(`<button class="btn-xs btn-done-xs" onclick="openModal(${m.id})">Mark Done</button>`);
-    if (m.status === 'planned') acts.push(`<button class="btn-xs btn-prog-xs" onclick="setStatus(${m.id},'ongoing')">Mark In Progress</button>`);
-    if (m.status !== 'planned') acts.push(`<button class="btn-xs btn-reset-xs" onclick="setStatus(${m.id},'planned')">Reset to Planned</button>`);
-    return `
-    <div class="tl-item">
-      <div class="tl-dot-col">
-        <div class="tl-dot ${m.status}" title="${badgeText}"></div>
-      </div>
+  document.getElementById('tl').innerHTML = state.milestones.map(m=>{
+    const BT={done:'✓ Done',ongoing:'⟳ In Progress',planned:'◷ Planned'}[m.status];
+    const doneAt = m.completedAt?`<span class="tl-at">✓ ${fmt(m.completedAt)}</span>`:'';
+    const commitBadge = m.commit?`<span class="tl-commit">⬡ ${m.commit}</span>`:'';
+    const notes = m.notes?`<div class="tl-notes">"${m.notes}"</div>`:'';
+    const stretchTag = m.stretch?`<span class="stretch-tag">✦ Stretch</span>`:'';
+    const acts=[];
+    if(m.status!=='done')    acts.push(`<button class="btn-xs btn-done-xs" onclick="openModal(${m.id})">Mark Done</button>`);
+    if(m.status==='planned') acts.push(`<button class="btn-xs btn-prog-xs" onclick="setStatus(${m.id},'ongoing')">Mark In Progress</button>`);
+    if(m.status!=='planned') acts.push(`<button class="btn-xs btn-rst-xs" onclick="setStatus(${m.id},'planned')">Reset</button>`);
+    acts.push(`<button class="btn-xs btn-edit-xs" onclick="openEditModal(${m.id})">✏ Edit</button>`);
+    if(m.userAdded) acts.push(`<button class="btn-xs btn-del-xs" onclick="deleteMilestone(${m.id})">🗑 Delete</button>`);
+    return`<div class="tl-item">
+      <div class="tl-col"><div class="tl-dot ${m.status}" title="${BT}"></div></div>
       <div class="tl-card">
-        <div class="tl-header">
-          <div class="tl-title">${m.title}</div>
-          <div class="badge ${m.status}">${badgeText}</div>
-        </div>
+        <div class="tl-hd"><div class="tl-title">${m.title}${stretchTag}</div><div class="badge ${m.status}">${BT}</div></div>
         <div class="tl-desc">${m.desc}</div>
-        <div class="tl-meta">
-          <span class="tl-day">🕐 ${m.day}</span>${doneAt}
-        </div>
+        <div class="tl-meta"><span class="tl-day">🕐 ${m.day}</span>${doneAt}${commitBadge}</div>
         ${notes}
         <div class="tl-actions">${acts.join('')}</div>
-      </div>
-    </div>`;
+      </div></div>`;
   }).join('');
-
   updateRing();
 }
 
-function fmt(s) {
-  if (!s) return '';
-  try { return new Date(s).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
-  catch(e){ return s; }
+function fmt(s){
+  if(!s)return'';
+  try{return new Date(s).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
+  catch(e){return s}
+}
+function setStatus(id,st){
+  const m=state.milestones.find(x=>x.id===id);
+  if(!m)return;
+  m.status=st;
+  if(st!=='done')m.completedAt=null;
+  save();renderTL();
 }
 
-function setStatus(id, status) {
-  const m = state.milestones.find(x => x.id === id);
-  if (!m) return;
-  m.status = status;
-  if (status !== 'done') m.completedAt = null;
-  save(); renderTimeline();
+// ── Modal ────────────────────────────────────────────────────────
+let mId=null;
+function openModal(id){
+  const m=state.milestones.find(x=>x.id===id);
+  mId=id;
+  document.getElementById('mTitle').textContent='Mark as Done';
+  document.getElementById('mSub').textContent=m.title;
+  document.getElementById('mDt').value=nowLocal();
+  document.getElementById('mNotes').value=m.notes||'';
+  document.getElementById('mConfirm').onclick=confirmModal;
+  document.getElementById('overlay').classList.add('open');
 }
+function confirmModal(){
+  const m=state.milestones.find(x=>x.id===mId);
+  if(!m)return;
+  m.status='done';
+  m.completedAt=document.getElementById('mDt').value;
+  m.notes=document.getElementById('mNotes').value.trim();
+  save();closeModal();renderTL();
+}
+function closeModal(){document.getElementById('overlay').classList.remove('open');mId=null}
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target===document.getElementById('overlay'))closeModal()});
+function nowLocal(){const d=new Date();return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
 
-// ── Modal ──────────────────────────────────────────────────────
-let modalId = null;
-function openModal(id) {
-  const m = state.milestones.find(x => x.id === id);
-  modalId = id;
-  document.getElementById('modalTitle').textContent = 'Mark as Done';
-  document.getElementById('modalSub').textContent   = m.title;
-  document.getElementById('modalDt').value          = nowLocal();
-  document.getElementById('modalNotes').value       = m.notes || '';
-  document.getElementById('modalConfirm').onclick   = confirmModal;
-  document.getElementById('modalOverlay').classList.add('open');
-}
-function confirmModal() {
-  const m = state.milestones.find(x => x.id === modalId);
-  if (!m) return;
-  m.status      = 'done';
-  m.completedAt = document.getElementById('modalDt').value;
-  m.notes       = document.getElementById('modalNotes').value.trim();
-  save(); closeModal(); renderTimeline();
-}
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
-  modalId = null;
-}
-document.getElementById('modalOverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-});
-function nowLocal() {
-  const d = new Date();
-  return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,16);
-}
-
-// ── Metrics ────────────────────────────────────────────────────
-function renderMetrics() {
-  document.getElementById('metricsGrid').innerHTML = state.metrics.map(m =>
+// ── Metrics ──────────────────────────────────────────────────────
+function renderMetrics(){
+  document.getElementById('metricsGrid').innerHTML = state.metrics.map(m=>
     `<div class="metric-card">
       <div class="metric-icon">${m.icon}</div>
-      <div class="metric-value" id="mv-${m.id}"
-           contenteditable="true"
+      <div class="metric-val" id="mv-${m.id}" contenteditable="true"
            onblur="saveMetric('${m.id}',this)"
-           onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"
+           onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
            title="Click to edit">${m.value}</div>
       <div class="metric-label">${m.label}</div>
       <div class="metric-note">${m.note}</div>
     </div>`
   ).join('');
 }
-function saveMetric(id, el) {
-  const m = state.metrics.find(x => x.id === id);
-  if (m) m.value = el.textContent.trim();
+function saveMetric(id,el){
+  const m=state.metrics.find(x=>x.id===id);
+  if(m)m.value=el.textContent.trim();
   save();
 }
 
-// ── Slides ─────────────────────────────────────────────────────
-let slide = 0;
-const TOTAL = 4;
-function initSlides() {
-  document.getElementById('slideDots').innerHTML =
-    Array.from({length: TOTAL}, (_,i) =>
+// ── Slides ───────────────────────────────────────────────────────
+let slide=0; const TOTAL=4;
+function initSlides(){
+  document.getElementById('dots').innerHTML=
+    Array.from({length:TOTAL},(_,i)=>
       `<div class="dot ${i===0?'active':''}" onclick="goSlide(${i})"></div>`
     ).join('');
 }
-function goSlide(n) {
-  slide = Math.max(0, Math.min(TOTAL-1, n));
-  document.getElementById('slidesTrack').style.transform = `translateX(-${slide*100}%)`;
-  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i===slide));
+function goSlide(n){
+  slide=Math.max(0,Math.min(TOTAL-1,n));
+  document.getElementById('slidesTrack').style.transform=`translateX(-${slide*100}%)`;
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===slide));
 }
-function changeSlide(d) { goSlide(slide + d); }
+function changeSlide(d){goSlide(slide+d)}
 
-// ── Keyboard ───────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight') changeSlide(1);
-  if (e.key === 'ArrowLeft')  changeSlide(-1);
-  if (e.key === 'Escape')     closeModal();
+// ── progress.json auto-fetch & merge ────────────────────────────
+async function fetchProgress(){
+  try{
+    const r = await fetch('./progress.json?v='+Date.now());
+    if(!r.ok) return;
+    const p = await r.json();
+    let changed = false;
+    for(const u of (p.milestone_updates||[])){
+      const m = state.milestones.find(x=>x.id===u.id);
+      // Only auto-update if still "planned" — never overwrite manual "done" or "ongoing"
+      if(m && m.status==='planned' && u.status==='done'){
+        m.status      = 'done';
+        m.completedAt = u.completed_at||u.completedAt||null;
+        m.commit      = u.source_commit||'';
+        m.notes       = m.notes || (u.source_message?`Auto: ${u.source_message.slice(0,80)}`:'');
+        changed = true;
+      }
+    }
+    if(changed){ save(); renderTL(); }
+    // Show sync indicator
+    const gen = p.generated_at ? new Date(p.generated_at).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+    const ind = document.getElementById('syncIndicator');
+    const lbl = document.getElementById('syncLabel');
+    if(gen){ lbl.textContent=`Synced ${gen}`; ind.style.display='flex'; }
+  }catch(e){}
+}
+
+// ── Add / Edit / Delete milestones ──────────────────────────────
+let editId = null; // null = add mode, number = edit mode
+
+function openAddModal(){
+  editId = null;
+  document.getElementById('editTitle').textContent = 'Add Milestone / Stretch Goal';
+  document.getElementById('editSub').textContent   = 'Added milestones are saved locally and persist across refreshes.';
+  document.getElementById('eTitle').value   = '';
+  document.getElementById('eDesc').value    = '';
+  document.getElementById('eDay').value     = '';
+  document.getElementById('eStatus').value  = 'planned';
+  document.getElementById('eStretch').checked = false;
+  document.getElementById('eDoneSection').style.display = 'none';
+  document.getElementById('eDt').value = nowLocal();
+  document.getElementById('editConfirm').textContent = 'Add Milestone';
+  document.getElementById('editOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('eTitle').focus(), 80);
+}
+
+function openEditModal(id){
+  const m = state.milestones.find(x=>x.id===id);
+  if(!m) return;
+  editId = id;
+  document.getElementById('editTitle').textContent = 'Edit Milestone';
+  document.getElementById('editSub').textContent   = `ID #${m.id} · ${m.userAdded?'User-added':'Core milestone'}`;
+  document.getElementById('eTitle').value   = m.title;
+  document.getElementById('eDesc').value    = m.desc;
+  document.getElementById('eDay').value     = m.day;
+  document.getElementById('eStatus').value  = m.status;
+  document.getElementById('eStretch').checked = !!m.stretch;
+  document.getElementById('eDoneSection').style.display = m.status==='done'?'block':'none';
+  document.getElementById('eDt').value = m.completedAt || nowLocal();
+  document.getElementById('editConfirm').textContent = 'Save Changes';
+  document.getElementById('editOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('eTitle').focus(), 80);
+}
+
+// Show/hide "Completed at" when status changes in modal
+document.getElementById('eStatus').addEventListener('change', function(){
+  document.getElementById('eDoneSection').style.display = this.value==='done'?'block':'none';
 });
 
-// ── Export / Import / Reset ────────────────────────────────────
-function exportState() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-  const a = Object.assign(document.createElement('a'),
-    {href: URL.createObjectURL(blob), download: 'parallax_dashboard.json'});
-  a.click(); URL.revokeObjectURL(a.href);
-}
-function importState() {
-  const json = prompt('Paste exported JSON state here:');
-  if (!json) return;
-  try {
-    const s = JSON.parse(json);
-    state = { milestones: s.milestones || state.milestones,
-              metrics:    s.metrics    || state.metrics,
-              theme:      s.theme      || state.theme };
-    save(); applyTheme(state.theme); renderTimeline(); renderMetrics();
-  } catch(e) { alert('Invalid JSON — could not import state.'); }
-}
-function resetAll() {
-  if (!confirm('Reset all milestones and metrics to defaults?')) return;
-  state = { milestones: structuredClone(DEFAULT_MILESTONES),
-            metrics:    structuredClone(DEFAULT_METRICS), theme: state.theme };
-  save(); renderTimeline(); renderMetrics();
+document.getElementById('editConfirm').addEventListener('click', ()=>{
+  const title = document.getElementById('eTitle').value.trim();
+  if(!title){ document.getElementById('eTitle').focus(); return; }
+
+  if(editId === null){
+    // ADD
+    const newId = Math.max(0, ...state.milestones.map(m=>m.id)) + 1;
+    state.milestones.push({
+      id:        newId,
+      title:     title,
+      desc:      document.getElementById('eDesc').value.trim(),
+      day:       document.getElementById('eDay').value.trim() || 'TBD',
+      status:    document.getElementById('eStatus').value,
+      completedAt: document.getElementById('eStatus').value==='done' ? document.getElementById('eDt').value : null,
+      notes:     '',
+      commit:    '',
+      stretch:   document.getElementById('eStretch').checked,
+      userAdded: true,
+    });
+  } else {
+    // EDIT
+    const m = state.milestones.find(x=>x.id===editId);
+    if(!m) return;
+    m.title   = title;
+    m.desc    = document.getElementById('eDesc').value.trim();
+    m.day     = document.getElementById('eDay').value.trim() || m.day;
+    m.status  = document.getElementById('eStatus').value;
+    m.stretch = document.getElementById('eStretch').checked;
+    if(m.status==='done') m.completedAt = document.getElementById('eDt').value;
+    else if(m.status==='planned') m.completedAt = null;
+  }
+
+  save();
+  closeEditModal();
+  renderTL();
+});
+
+function closeEditModal(){
+  document.getElementById('editOverlay').classList.remove('open');
+  editId = null;
 }
 
-// ── Boot ───────────────────────────────────────────────────────
+function deleteMilestone(id){
+  const m = state.milestones.find(x=>x.id===id);
+  if(!m || !m.userAdded) return;
+  if(!confirm(`Delete milestone "${m.title}"?\nThis cannot be undone.`)) return;
+  state.milestones = state.milestones.filter(x=>x.id!==id);
+  save(); renderTL();
+}
+
+document.getElementById('editOverlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('editOverlay')) closeEditModal();
+});
+function exportState(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'parallax_dashboard.json'});
+  a.click();URL.revokeObjectURL(a.href);
+}
+function importState(){
+  const json=prompt('Paste exported JSON state:');
+  if(!json)return;
+  try{
+    const s=JSON.parse(json);
+    state={milestones:s.milestones||state.milestones,metrics:s.metrics||state.metrics,theme:s.theme||state.theme};
+    save();applyTheme(state.theme);renderTL();renderMetrics();
+  }catch(e){alert('Invalid JSON')}
+}
+function resetAll(){
+  if(!confirm('Reset all milestones and metrics to defaults?'))return;
+  state={milestones:structuredClone(DEFAULT_MILESTONES),metrics:structuredClone(DEFAULT_METRICS),theme:state.theme};
+  save();renderTL();renderMetrics();
+}
+
+// ── Keyboard ─────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight')changeSlide(1);
+  if(e.key==='ArrowLeft') changeSlide(-1);
+  if(e.key==='Escape'){closeModal();closeEditModal();}
+});
+
+// ── Boot ─────────────────────────────────────────────────────────
 applyTheme(state.theme);
 initSlides();
-renderTimeline();
+renderTL();
 renderMetrics();
-setTimeout(updateRing, 400);
+setTimeout(updateRing,400);
+fetchProgress();   // merge any auto-synced commits from progress.json
 </script>
 </body>
 </html>
