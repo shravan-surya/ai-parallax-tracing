@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Parallax Tracer — Hackathon Dashboard</title>
+  <style>
+    /* =============================================
+       THEME TOKENS
+    ============================================= */
+    :root {
+      --accent:        #0969da;
+      --accent-2:      #1a7f64;
+      --accent-3:      #6e40c9;
+      --bg:            #ffffff;
+      --bg-subtle:     #f6f8fa;
+      --bg-card:       #ffffff;
+      --bg-inset:      #f0f4f8;
+      --border:        #d0d7de;
+      --border-muted:  #e8ecf0;
+      --text-primary:  #1f2328;
+      --text-secondary:#57606a;
+      --text-muted:    #8c959f;
+      --green:         #1a7f37;
+      --green-bg:      #dafbe1;
+      --green-border:  #aceebb;
+      --amber:         #9a6700;
+      --amber-bg:      #fff8c5;
+      --amber-border:  #f5c518;
+      --gray-bg:       #f6f8fa;
+      --gray-border:   #d0d7de;
+      --shadow-sm:     0 1px 3px rgba(27,31,36,0.1), 0 0 0 1px rgba(27,31,36,0.06);
+      --shadow-md:     0 3px 12px rgba(27,31,36,0.12), 0 0 0 1px rgba(27,31,36,0.07);
+      --font:          -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --mono:          'SF Mono','Fira Code','Cascadia Code',monospace;
+      --radius:        8px;
+      --nav-bg:        rgba(255,255,255,0.9);
+    }
+
+    [data-theme="dark"] {
+      --accent:        #4493f8;
+      --accent-2:      #3fb950;
+      --accent-3:      #bc8cff;
+      --bg:            #0d1117;
+      --bg-subtle:     #161b22;
+      --bg-card:       #161b22;
+      --bg-inset:      #0d1117;
+      --border:        #30363d;
+      --border-muted:  #21262d;
+      --text-primary:  #e6edf3;
+      --text-secondary:#8b949e;
+      --text-muted:    #6e7681;
+      --green:         #3fb950;
+      --green-bg:      #0d2f16;
+      --green-border:  #1a4a1e;
+      --amber:         #d29922;
+      --amber-bg:      #2d1f00;
+      --amber-border:  #6e4800;
+      --gray-bg:       #161b22;
+      --gray-border:   #30363d;
+      --shadow-sm:     0 1px 3px rgba(0,0,0,0.4);
+      --shadow-md:     0 3px 12px rgba(0,0,0,0.5);
+      --nav-bg:        rgba(13,17,23,0.9);
+    }
+
+    /* =============================================
+       RESET & BASE
+    ============================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background 0.25s, color 0.25s;
+    }
+    a { color: var(--accent); }
+    code {
+      font-family: var(--mono);
+      font-size: 0.82em;
+      background: var(--bg-inset);
+      border: 1px solid var(--border-muted);
+      border-radius: 4px;
+      padding: 0.1em 0.35em;
+    }
+
+    /* =============================================
+       NAVIGATION
+    ============================================= */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 2rem;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: background 0.25s, border-color 0.25s;
+    }
+    .nav-brand {
+      font-weight: 700; font-size: 0.9rem;
+      color: var(--accent); letter-spacing: 0.02em;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .nav-links {
+      display: flex; gap: 0.25rem; list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-secondary); text-decoration: none;
+      font-size: 0.85rem; padding: 0.3rem 0.65rem; border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-links a:hover { background: var(--bg-subtle); color: var(--text-primary); }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .nav-badge {
+      font-size: 0.72rem; font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text-secondary);
+    }
+    /* Theme toggle */
+    .theme-toggle {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      cursor: pointer; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* =============================================
+       LAYOUT HELPERS
+    ============================================= */
+    section { padding: 5rem 2rem; }
+    .container { max-width: 1080px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 0.4rem;
+    }
+    h2 {
+      font-size: clamp(1.5rem, 3vw, 2.1rem);
+      font-weight: 700; margin-bottom: 0.75rem; line-height: 1.2;
+    }
+    p.lead {
+      font-size: 1rem; color: var(--text-secondary);
+      max-width: 680px; margin-bottom: 2rem;
+    }
+    .divider { border: none; border-top: 1px solid var(--border-muted); margin: 0; }
+
+    /* =============================================
+       HERO
+    ============================================= */
+    #hero {
+      min-height: 100vh;
+      padding-top: 5rem;
+      display: flex; align-items: center;
+      background:
+        radial-gradient(ellipse at 15% 60%, rgba(9,105,218,0.06) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 25%, rgba(110,64,201,0.05) 0%, transparent 55%),
+        var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 4rem; align-items: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--accent);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.8rem; border-radius: 999px;
+      margin-bottom: 1.25rem;
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green); flex-shrink: 0;
+      animation: livePulse 2s infinite;
+    }
+    @keyframes livePulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.5; transform:scale(0.75); }
+    }
+    h1 {
+      font-size: clamp(2rem, 4.5vw, 3.2rem);
+      font-weight: 800; line-height: 1.1; margin-bottom: 1.25rem;
+    }
+    .hero-tagline {
+      font-size: 1.05rem; color: var(--text-secondary);
+      margin-bottom: 1.75rem; max-width: 560px;
+    }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 2rem; }
+    .tag {
+      font-size: 0.72rem; font-family: var(--mono);
+      padding: 0.2rem 0.55rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 4px; color: var(--text-secondary);
+    }
+
+    /* Progress ring */
+    .ring-wrap {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.75rem;
+    }
+    .ring-label-top {
+      font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .ring-container { position: relative; display: inline-flex; }
+    .ring-svg { transform: rotate(-90deg); }
+    .ring-track { fill: none; stroke: var(--border); stroke-width: 9; }
+    .ring-fill  {
+      fill: none; stroke: var(--accent); stroke-width: 9;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1);
+    }
+    .ring-center-text {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .ring-pct {
+      font-size: 1.75rem; font-weight: 800;
+      color: var(--text-primary); line-height: 1;
+    }
+    .ring-sub {
+      font-size: 0.6rem; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-top: 0.15rem;
+    }
+    .ring-caption {
+      font-size: 0.75rem; color: var(--text-secondary);
+      text-align: center; max-width: 200px;
+    }
+
+    /* =============================================
+       PROBLEM
+    ============================================= */
+    #problem { background: var(--bg-subtle); border-bottom: 1px solid var(--border); }
+    .pain-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 0.75rem; margin-top: 1.5rem;
+    }
+    .pain-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.25rem;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .pain-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .pain-icon { font-size: 1.4rem; margin-bottom: 0.6rem; }
+    .pain-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .pain-desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .signal-chain-wrap {
+      margin: 1.75rem 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+    .chain { display: flex; align-items: center; min-width: 680px; }
+    .chain-node { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; min-width: 110px; }
+    .chain-box {
+      padding: 0.45rem 0.7rem; border-radius: 6px;
+      font-size: 0.73rem; font-weight: 700; text-align: center;
+      white-space: nowrap; font-family: var(--mono);
+      border: 1px solid;
+    }
+    .chain-box.app    { background:#f0f7ff; border-color:#b6d4fe; color:#0550ae; }
+    .chain-box.rvm    { background:#fff8f0; border-color:#f5c518; color:#6e3c00; }
+    .chain-box.egw    { background:#f0fff4; border-color:#aceebb; color:#1a5e2e; }
+    .chain-box.zonal  { background:#fdf0ff; border-color:#d8b4fe; color:#5b21b6; }
+    [data-theme="dark"] .chain-box.app   { background:#0c1f3a; border-color:#1a3a6e; color:#79b8ff; }
+    [data-theme="dark"] .chain-box.rvm   { background:#2d1f00; border-color:#6e4800; color:#f5c518; }
+    [data-theme="dark"] .chain-box.egw   { background:#0d2f16; border-color:#1a4a1e; color:#56d364; }
+    [data-theme="dark"] .chain-box.zonal { background:#2a0f4a; border-color:#5b21b6; color:#c084fc; }
+    .chain-repo { font-size: 0.6rem; color: var(--text-muted); font-family: var(--mono); text-align: center; }
+    .chain-arrow {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 0.2rem; padding: 0 0.2rem;
+    }
+    .chain-line {
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, var(--border), var(--accent), var(--border));
+      position: relative;
+    }
+    .chain-line::after {
+      content:'▶'; position: absolute; right: -6px; top: -7px;
+      font-size: 0.65rem; color: var(--accent);
+    }
+    .chain-label { font-size: 0.58rem; color: var(--text-muted); font-family: var(--mono); text-align: center; }
+    .chain-caption { margin-top: 1rem; font-size: 0.78rem; color: var(--text-secondary); text-align: center; }
+    .chain-caption strong { color: var(--text-primary); }
+
+    /* =============================================
+       SOLUTION SLIDES
+    ============================================= */
+    #solution { background: var(--bg); }
+    .slides-outer { position: relative; overflow: hidden; border-radius: var(--radius); }
+    .slides-track {
+      display: flex;
+      transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+    }
+    .slide {
+      min-width: 100%; padding: 2rem 2.25rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+    .slide-num {
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 0.35rem;
+      font-family: var(--mono);
+    }
+    .slide h3 { font-size: clamp(1.1rem,2.2vw,1.6rem); font-weight: 700; margin-bottom: 0.9rem; }
+    .slide-body { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+    .slide-text p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.85rem; }
+    .bullets { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .bullets li {
+      display: flex; gap: 0.55rem; font-size: 0.875rem;
+      color: var(--text-secondary); align-items: flex-start;
+    }
+    .bullets li::before { content:'→'; color: var(--accent); flex-shrink: 0; margin-top: 0.05rem; }
+    .bullets li strong { color: var(--text-primary); }
+    .slide-visual {
+      background: var(--bg-inset);
+      border: 1px solid var(--border);
+      border-radius: 6px; padding: 1.1rem;
+      font-size: 0.77rem; font-family: var(--mono);
+      color: var(--text-secondary);
+      white-space: pre; overflow-x: auto; line-height: 1.65;
+    }
+    .slides-nav {
+      display: flex; align-items: center;
+      justify-content: center; gap: 0.75rem; margin-top: 1.25rem;
+    }
+    .slide-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text-secondary);
+      cursor: pointer; font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; box-shadow: var(--shadow-sm);
+    }
+    .slide-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .slide-dots { display: flex; gap: 0.4rem; }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--border); cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .dot.active { background: var(--accent); transform: scale(1.35); }
+
+    /* =============================================
+       MILESTONES
+    ============================================= */
+    #milestones { background: var(--bg-subtle); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .ms-summary {
+      display: flex; flex-wrap: wrap; gap: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .ms-stat { font-size: 0.82rem; color: var(--text-secondary); }
+    .ms-stat strong { color: var(--text-primary); }
+    .progress-bar-wrap {
+      width: 100%; height: 6px;
+      background: var(--border); border-radius: 3px;
+      margin-bottom: 2.5rem; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 3px; transition: width 0.8s ease;
+    }
+
+    /* Timeline */
+    .timeline { position: relative; padding-left: 0; }
+    .tl-item {
+      display: flex; gap: 1.25rem;
+      margin-bottom: 1rem; position: relative;
+    }
+    /* vertical connector */
+    .tl-item:not(:last-child) .tl-dot-col::after {
+      content: '';
+      position: absolute;
+      left: 50%; top: 22px; bottom: -1rem;
+      width: 2px; transform: translateX(-50%);
+      background: var(--border-muted);
+    }
+    .tl-dot-col {
+      position: relative; flex-shrink: 0;
+      width: 40px; display: flex;
+      justify-content: center; padding-top: 3px;
+    }
+    .tl-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2.5px solid; background: var(--bg-card);
+      position: relative; z-index: 1; flex-shrink: 0;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .tl-dot:hover { transform: scale(1.2); }
+    .tl-dot.done    { background: var(--green); border-color: var(--green); }
+    .tl-dot.ongoing { border-color: var(--amber); animation: dotGlow 2s infinite; }
+    .tl-dot.planned { border-color: var(--border); }
+    @keyframes dotGlow {
+      0%,100% { box-shadow: 0 0 0 0 rgba(210,153,34,0); }
+      50%      { box-shadow: 0 0 0 5px rgba(210,153,34,0.3); }
+    }
+    .tl-card {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s;
+    }
+    .tl-card:hover { box-shadow: var(--shadow-md); }
+    .tl-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.3rem; }
+    .tl-title { font-size: 0.92rem; font-weight: 700; }
+    .badge {
+      font-size: 0.67rem; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      padding: 0.15rem 0.5rem; border-radius: 4px;
+      border: 1px solid; white-space: nowrap; flex-shrink: 0;
+    }
+    .badge.done    { color: var(--green);  background: var(--green-bg);  border-color: var(--green-border); }
+    .badge.ongoing { color: var(--amber);  background: var(--amber-bg);  border-color: var(--amber-border); }
+    .badge.planned { color: var(--text-muted); background: var(--gray-bg); border-color: var(--gray-border); }
+    .tl-desc { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .tl-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+    .tl-day { font-size: 0.7rem; color: var(--text-muted); font-family: var(--mono); }
+    .tl-done-at { font-size: 0.7rem; color: var(--green); font-family: var(--mono); }
+    .tl-notes { font-size: 0.78rem; color: var(--accent); font-style: italic; margin-top: 0.4rem; }
+    .tl-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
+    .btn-xs {
+      font-size: 0.7rem; padding: 0.22rem 0.6rem;
+      border-radius: 5px; border: 1px solid; background: transparent;
+      cursor: pointer; font-family: var(--font); font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn-done-xs    { border-color: var(--green); color: var(--green); }
+    .btn-done-xs:hover { background: var(--green-bg); }
+    .btn-prog-xs    { border-color: var(--amber); color: var(--amber); }
+    .btn-prog-xs:hover { background: var(--amber-bg); }
+    .btn-reset-xs   { border-color: var(--border); color: var(--text-muted); }
+    .btn-reset-xs:hover { border-color: var(--text-secondary); color: var(--text-secondary); }
+
+    /* =============================================
+       METRICS
+    ============================================= */
+    #metrics { background: var(--bg); }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 0.75rem; margin-top: 1.75rem;
+    }
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .metric-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .metric-icon { font-size: 1.6rem; margin-bottom: 0.6rem; }
+    .metric-value {
+      font-size: 2.1rem; font-weight: 800;
+      color: var(--accent); line-height: 1;
+      cursor: text; outline: none;
+      border-radius: 4px; padding: 0 2px;
+      transition: background 0.15s;
+    }
+    .metric-value:focus { background: var(--bg-subtle); }
+    .metric-label { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-top: 0.35rem; }
+    .metric-note  { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .metrics-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 1rem; }
+
+    /* =============================================
+       MODAL
+    ============================================= */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200; display: flex;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.75rem;
+      width: min(460px, 92vw);
+      box-shadow: var(--shadow-md);
+      transform: scale(0.96);
+      transition: transform 0.2s;
+    }
+    .modal-overlay.open .modal { transform: scale(1); }
+    .modal h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .modal-sub { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.25rem; }
+    .modal label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.3rem; }
+    .modal input, .modal textarea {
+      width: 100%; padding: 0.55rem 0.75rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text-primary); font-family: var(--font);
+      font-size: 0.875rem; margin-bottom: 0.9rem;
+      outline: none; transition: border-color 0.15s;
+    }
+    .modal input:focus, .modal textarea:focus { border-color: var(--accent); }
+    .modal textarea { resize: vertical; min-height: 70px; }
+    .modal-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
+    .btn-primary {
+      padding: 0.45rem 1.1rem;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 6px;
+      font-weight: 700; font-size: 0.85rem;
+      cursor: pointer; font-family: var(--font);
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-secondary {
+      padding: 0.45rem 1.1rem; background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border); border-radius: 6px;
+      font-weight: 600; font-size: 0.85rem;
+      cursor: pointer; font-family: var(--font);
+      transition: border-color 0.15s;
+    }
+    .btn-secondary:hover { border-color: var(--text-secondary); }
+
+    /* =============================================
+       FOOTER
+    ============================================= */
+    footer {
+      padding: 2rem; text-align: center;
+      background: var(--bg-subtle);
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem; color: var(--text-secondary);
+    }
+    footer a { color: var(--accent); }
+    .footer-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 0.75rem; }
+    .btn-ghost {
+      padding: 0.35rem 0.85rem; font-size: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px; background: var(--bg-card);
+      color: var(--text-secondary); cursor: pointer;
+      font-family: var(--font); transition: all 0.15s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* =============================================
+       RESPONSIVE
+    ============================================= */
+    @media (max-width: 720px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .ring-wrap { display: none; }
+      .slide-body { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      section { padding: 4rem 1.25rem; }
+    }
+    @media print {
+      nav, .slides-nav, .tl-actions, .footer-actions, .theme-toggle { display: none !important; }
+      section { break-inside: avoid; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">⬡ AI Parallax Tracer</div>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#solution">Solution</a></li>
+    <li><a href="#milestones">Milestones</a></li>
+    <li><a href="#metrics">Metrics</a></li>
+  </ul>
+  <div class="nav-right">
+    <span class="nav-badge">Hackathon 2026</span>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode" onclick="toggleTheme()">🌙</button>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-eyebrow"><span class="live-dot"></span>Live Dashboard · Hackathon 2026</div>
+        <h1>AI Parallax Signal<br>Traceability Engine</h1>
+        <p class="hero-tagline">
+          Cross-ECU signal chain visibility — from RAL bus frame to Kotlin app subscriber,
+          traced end-to-end across 4+ repositories using KB + AI skills.
+        </p>
+        <div class="hero-tags">
+          <span class="tag">EGW2 Bridge</span>
+          <span class="tag">Vehicle Model (RVM)</span>
+          <span class="tag">RAL Bus Signals</span>
+          <span class="tag">KB + AI Skills</span>
+          <span class="tag">Cytoscape Graph</span>
+          <span class="tag">NATS Subjects</span>
+          <span class="tag">v1_0 variant</span>
+        </div>
+      </div>
+      <div class="ring-wrap">
+        <div class="ring-label-top">Overall Progress</div>
+        <div class="ring-container">
+          <svg class="ring-svg" id="ringSvg" width="156" height="156" viewBox="0 0 156 156">
+            <circle class="ring-track" cx="78" cy="78" r="63"/>
+            <circle class="ring-fill"  id="ringFill" cx="78" cy="78" r="63"
+              stroke-dasharray="395.84" stroke-dashoffset="395.84"/>
+          </svg>
+          <div class="ring-center-text">
+            <div class="ring-pct" id="ringPct">0%</div>
+            <div class="ring-sub">done</div>
+          </div>
+        </div>
+        <div class="ring-caption" id="ringCaption">Loading…</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PROBLEM ===================== -->
+<section id="problem">
+  <div class="container">
+    <div class="section-label">01 — Problem Statement</div>
+    <h2>The Signal Chain Is Completely Invisible</h2>
+    <p class="lead">
+      The Parallax framework enables cross-ECU signal communication via a Vehicle Model (RVM),
+      but the full signal chain is buried across <strong>4+ repositories</strong> and <strong>3+ code generators</strong>.
+      No single tool shows the complete path from a CAN frame to the Kotlin app that reads it.
+    </p>
+
+    <div class="signal-chain-wrap">
+      <div class="chain">
+        <div class="chain-node">
+          <div class="chain-box app">Kotlin App</div>
+          <div class="chain-repo">ecu/lagvm/apps/</div>
+        </div>
+        <div class="chain-arrow">
+          <div class="chain-line"></div>
+          <div class="chain-label">NATS Subject<br>SERVICE.VSVC.*</div>
+        </div>
+        <div class="chain-node">
+          <div class="chain-box rvm">RVM Vehicle<br>Model</div>
+          <div class="chain-repo">interfaces/parallax/</div>
+        </div>
+        <div class="chain-arrow">
+          <div class="chain-line"></div>
+          <div class="chain-label">routing-rules<br>YAML mapping</div>
+        </div>
+        <div class="chain-node">
+          <div class="chain-box egw">EGW2 Bridge</div>
+          <div class="chain-repo">elpis-gw-2/</div>
+        </div>
+        <div class="chain-arrow">
+          <div class="chain-line"></div>
+          <div class="chain-label">Elpis signal<br>CAN/ETH PDU</div>
+        </div>
+        <div class="chain-node">
+          <div class="chain-box zonal">Zonal ECU<br>FZC / BZC</div>
+          <div class="chain-repo">vwg/project/auto/</div>
+        </div>
+      </div>
+      <div class="chain-caption">
+        Signal chain spans <strong>4+ repos</strong> · <strong>3 code generators</strong> · <strong>5 file types</strong>
+        — with <strong>zero unified view</strong> today
+      </div>
+    </div>
+
+    <div class="pain-grid">
+      <div class="pain-card">
+        <div class="pain-icon">🔍</div>
+        <div class="pain-title">No End-to-End Trace</div>
+        <div class="pain-desc">Which app reads signal X? Which ECU sends raw frame Y? No tool answers these in a single query.</div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">💥</div>
+        <div class="pain-title">Hidden Impact Analysis</div>
+        <div class="pain-desc">When a property changes, what signals and services are transitively affected? Nobody knows without reading 4 codebases.</div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">🗂️</div>
+        <div class="pain-title">Silent Variant Drift</div>
+        <div class="pain-desc">Does <code>fan_speed</code> exist in v1_0 but not v2_1? RAL files diverge across variants with no visibility.</div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-icon">⏳</div>
+        <div class="pain-title">Manual Archaeology</div>
+        <div class="pain-desc">Engineers spend ~2.5 hrs grepping across repos to map a single signal. Pure friction — no value, high error rate.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SOLUTION ===================== -->
+<section id="solution">
+  <div class="container">
+    <div class="section-label">02 — Solution Approach</div>
+    <h2>AI-Powered Signal Traceability</h2>
+    <p class="lead">Four capabilities that together make the invisible signal chain visible, queryable, and safe to refactor.</p>
+
+    <div class="slides-outer">
+      <div class="slides-track" id="slidesTrack">
+
+        <!-- SLIDE 1 -->
+        <div class="slide">
+          <div class="slide-num">01 / 04</div>
+          <h3>Multi-Layer Signal Parsing</h3>
+          <div class="slide-body">
+            <div class="slide-text">
+              <p>Five purpose-built parsers extract structured data from every layer of the Parallax signal chain — no generated code or API needed.</p>
+              <ul class="bullets">
+                <li><strong>RvmParser</strong> — extracts properties &amp; services from <code>*.rvm</code> YAML, derives NATS subjects algorithmically</li>
+                <li><strong>RoutingRulesParser</strong> — maps Elpis ↔ Parallax namespace from <code>routing-rules/*.yaml</code></li>
+                <li><strong>RalBusParser</strong> — captures PDU IDs, sender/receiver ECUs, cycle times from <code>*.bus.ral</code></li>
+                <li><strong>AppCodeParser</strong> — grep-based Kotlin analysis: <code>buildFlow()</code> / <code>requestTyped()</code> calls</li>
+                <li><strong>OrchestratorParser</strong> — resolves fan-out: 1 service call → N downstream edges</li>
+              </ul>
+            </div>
+            <div class="slide-visual">L1  RVM Vehicle Model
+    └─ namespace / property / service
+    └─ owner ECU, scope
+    └─ NATS subject (derived)
+
+L2  EGW2 Routing Rules
+    └─ Elpis signal ↔ Parallax subject
+    └─ direction: App→Zonal or reverse
+
+L3  RAL Bus Signals
+    └─ PDU ID, CAN/ETH frame
+    └─ sender ECU, receivers[]
+    └─ cycle_time_ms
+
+L4  App Code (Kotlin)
+    └─ buildFlow("STATE.*")
+    └─ requestTyped("SERVICE.*")
+
+L5  Orchestrator
+    └─ incoming_service
+    └─ outgoing_services[6]</div>
+          </div>
+        </div>
+
+        <!-- SLIDE 2 -->
+        <div class="slide">
+          <div class="slide-num">02 / 04</div>
+          <h3>Graph-Based Flow Tracing</h3>
+          <div class="slide-body">
+            <div class="slide-text">
+              <p>Parsed data populates a directed signal graph with nodes for signals, apps, ECUs and RVM entries — edges encode 3 confirmed flow patterns.</p>
+              <ul class="bullets">
+                <li><strong>Pattern A</strong> — App → EGW2 → Zonal (command: e.g. <code>setFanSpeed</code>)</li>
+                <li><strong>Pattern B</strong> — Zonal → EGW2 → App (state readout: e.g. <code>fanSpeed</code>)</li>
+                <li><strong>Pattern C</strong> — App → Orchestrator → EGW2 × N (fan-out: <code>setDriveMode</code> → 6 services)</li>
+                <li>Graph stored in PostgreSQL as <code>parallax_flow_edges</code> with confidence scores</li>
+                <li>Cytoscape.js visualization with live traversal via MCP tool calls</li>
+              </ul>
+            </div>
+            <div class="slide-visual">App ──NATS──▶ RVM Node
+                         │
+              routing-rules YAML
+                         │
+                         ▼
+             Elpis Signal (PDU)
+                         │
+              RAL: sender=XMMDROID
+              receivers=[FZC, BZC]
+                         │
+                         ▼
+            Zonal ECU hardware
+
+Fan-out (Pattern C):
+  App ──▶ Orchestrator
+              ├─▶ EGW2 ──▶ FZC
+              ├─▶ EGW2 ──▶ BZC
+              └─▶ EGW2 ──▶ CZC</div>
+          </div>
+        </div>
+
+        <!-- SLIDE 3 -->
+        <div class="slide">
+          <div class="slide-num">03 / 04</div>
+          <h3>AI Skills for Deep Analysis</h3>
+          <div class="slide-body">
+            <div class="slide-text">
+              <p>KB AI skills wrap the signal graph with LLM-powered analysis — answering questions no SQL query can answer alone.</p>
+              <ul class="bullets">
+                <li><strong>Signal trace skill</strong> — "Trace all signals in climate domain" → full dependency chain in seconds</li>
+                <li><strong>Impact analysis</strong> — "What apps break if PDU 0x700 changes?" → backward graph traversal</li>
+                <li><strong>Variant diff</strong> — Compare v1_0 vs v2_1 signal coverage: missing / new / changed entries</li>
+                <li><strong>MCP tool</strong> — <code>parallax_trace(signal)</code> callable from IDE, CI, or chat interface</li>
+                <li><strong>Git provenance</strong> — every signal linked to commit SHA + file + line for full auditability</li>
+              </ul>
+            </div>
+            <div class="slide-visual">// MCP Tool call
+parallax_trace("fan_speed") →
+{
+  rvm_node:       "climate.cabin.fan_speed",
+  nats_subject:   "STATE.VEHICLE.*.climate...",
+  elpis_signal:   "VWG_HVAC_UI_Status",
+  pdu_id:         "0x701",
+  sender_ecu:     "FZC",
+  receiver_ecus:  ["XMMDROID"],
+  apps_subscribed:[
+    "HvacApp.kt:247",
+    "ClimateWidget.kt:89"
+  ],
+  pattern:        "B",
+  confidence:     0.97
+}</div>
+          </div>
+        </div>
+
+        <!-- SLIDE 4 -->
+        <div class="slide">
+          <div class="slide-num">04 / 04</div>
+          <h3>Impact &amp; Value for the Team</h3>
+          <div class="slide-body">
+            <div class="slide-text">
+              <p>Beyond a hackathon prototype — this fills a real gap in the development toolchain for Parallax-based vehicle software.</p>
+              <ul class="bullets">
+                <li><strong>Hours → seconds</strong>: Signal archaeology that takes an engineer ~2.5 hrs is now a single MCP query</li>
+                <li><strong>Safer refactoring</strong>: Full impact analysis before changing any routing rule or RVM property</li>
+                <li><strong>Faster onboarding</strong>: New engineers explore the full signal flow interactively via graph UI</li>
+                <li><strong>CI integration</strong>: Automated check "did this commit break a signal path?" via <code>parallax_trace</code></li>
+                <li><strong>Extensible</strong>: Plugin architecture adds new layers (Proto, SomeIP) without changing the core</li>
+              </ul>
+            </div>
+            <div class="slide-visual">Before (today):
+  grep -r "VWG_HVAC_UI_Status" \
+    firmware/ elpis-gw-2/ \
+    routing-rules/ lagvm/
+  → ~2.5 hours, error-prone
+
+After (Parallax Tracer):
+  parallax_trace("VWG_HVAC_UI_Status")
+  → Full chain in &lt; 2 seconds
+  → Git SHA, line numbers,
+     confidence scores, graph
+
+ROI per trace:    ~2.5 hrs saved
+Signals in scope: 50+ (v1_0)
+Potential impact: 100s hrs/sprint</div>
+          </div>
+        </div>
+
+      </div><!-- /slides-track -->
+    </div><!-- /slides-outer -->
+
+    <div class="slides-nav">
+      <button class="slide-btn" onclick="changeSlide(-1)">◀</button>
+      <div class="slide-dots" id="slideDots"></div>
+      <button class="slide-btn" onclick="changeSlide(1)">▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MILESTONES ===================== -->
+<section id="milestones">
+  <div class="container">
+    <div class="section-label">03 — Progress Tracker</div>
+    <h2>Hackathon Milestones</h2>
+    <p class="lead">Click <strong>Mark Done</strong> on any milestone to log it with a timestamp. All changes save locally in your browser.</p>
+    <div class="ms-summary" id="msSummary"></div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+</section>
+
+<!-- ===================== METRICS ===================== -->
+<section id="metrics">
+  <div class="container">
+    <div class="section-label">04 — Key Metrics</div>
+    <h2>Solution at a Glance</h2>
+    <p class="lead">Click any number to edit it live — changes are saved automatically.</p>
+    <div class="metrics-grid" id="metricsGrid"></div>
+    <p class="metrics-hint">💡 Click a number above to update it during the demo or pitch.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <strong>AI Parallax Tracer</strong> · Hackathon 2026 ·
+    <a href="https://github.com/shravan-surya/ai-parallax-tracing" target="_blank">GitHub ↗</a>
+  </div>
+  <div style="margin-top:0.35rem;font-size:0.7rem;color:var(--text-muted);">
+    Dashboard state auto-saved in browser localStorage · refresh-safe
+  </div>
+  <div class="footer-actions">
+    <button class="btn-ghost" onclick="exportState()">📋 Export State</button>
+    <button class="btn-ghost" onclick="importState()">📂 Import State</button>
+    <button class="btn-ghost" onclick="window.print()">🖨️ Print / PDF</button>
+    <button class="btn-ghost" onclick="resetAll()">🔄 Reset Defaults</button>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h4 id="modalTitle">Mark Milestone as Done</h4>
+    <div class="modal-sub" id="modalSub"></div>
+    <label>Completed at</label>
+    <input type="datetime-local" id="modalDt"/>
+    <label>Notes (optional)</label>
+    <textarea id="modalNotes" placeholder="What was achieved? Any links or blockers?"></textarea>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="modalConfirm">Mark Done ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT TEXTAREA (hidden) -->
+<textarea id="importArea" style="display:none"></textarea>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  EDIT THIS DATA BLOCK TO CHANGE MILESTONES / METRICS
+// ═══════════════════════════════════════════════════════════════
+
+const DEFAULT_MILESTONES = [
+  {
+    id: 1,
+    title: "AI Parallax Tracing Brainstorming",
+    desc: "Concept ideation, problem scoping, architecture decisions, hackathon brief analysis",
+    day: "Day 1 · Morning",
+    status: "done",
+    completedAt: "2026-07-14T10:00",
+    notes: "Concept v3 produced. 3 signal patterns confirmed. 5-layer data model defined."
+  },
+  {
+    id: 2,
+    title: "Create Signal Parser Files",
+    desc: "RVM, RAL bus, routing-rules YAML, Kotlin app code and orchestrator parsers — all 5 layers",
+    day: "Day 1 · Evening",
+    status: "done",
+    completedAt: "2026-07-14T18:00",
+    notes: "All 5 parsers complete with unit tests. Scanner orchestrator wired."
+  },
+  {
+    id: 3,
+    title: "Create AI Skills for Re-runs",
+    desc: "SKILL.md contracts, tab_registry sections, schema definitions for signal trace skills",
+    day: "Day 2 · Morning",
+    status: "ongoing",
+    completedAt: null,
+    notes: ""
+  },
+  {
+    id: 4,
+    title: "Parallax Signal Mining — Code Walkthrough",
+    desc: "Run parsers on firmware codebase, validate graph edges, resolve edge cases in RAL/RVM data",
+    day: "Day 2 · Afternoon",
+    status: "planned",
+    completedAt: null,
+    notes: ""
+  },
+  {
+    id: 5,
+    title: "Parallax Signal Database Strategy",
+    desc: "Schema finalization, migration scripts, query API endpoints for signal graph traversal",
+    day: "Day 2 · Evening",
+    status: "planned",
+    completedAt: null,
+    notes: ""
+  },
+  {
+    id: 6,
+    title: "AI Parallax Tracing Demonstration",
+    desc: "Live trace demo, Cytoscape graph visualization, MCP tool integration walkthrough",
+    day: "Day 3 · Morning",
+    status: "planned",
+    completedAt: null,
+    notes: ""
+  },
+  {
+    id: 7,
+    title: "AI Parallax Final Pitch",
+    desc: "Presentation to judges, live demo, Q&A, impact statement delivery",
+    day: "Day 3 · Afternoon",
+    status: "planned",
+    completedAt: null,
+    notes: ""
+  }
+];
+
+const DEFAULT_METRICS = [
+  { id: "repos",    icon: "🗂️",  value: "4",    label: "Repos Covered",     note: "RVM · EGW2 · RAL · Kotlin apps" },
+  { id: "parsers",  icon: "⚙️",  value: "5",    label: "Signal Parsers",    note: "RVM · RAL · Routes · App · Orch" },
+  { id: "signals",  icon: "📡",  value: "50+",  label: "Signals in Scope",  note: "v1_0 — climate, dynamics, energy…" },
+  { id: "patterns", icon: "🔀",  value: "3",    label: "Flow Patterns",     note: "Command · State · Fan-out" },
+  { id: "tests",    icon: "✅",  value: "12",   label: "Tests Written",     note: "Parser + scanner unit tests" },
+  { id: "hrs",      icon: "⏱️",  value: "2.5h", label: "Saved / Trace",     note: "vs. manual grep archaeology" }
+];
+
+// ═══════════════════════════════════════════════════════════════
+
+const STORE = 'parallax_dash_v2';
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE) || '{}');
+    return {
+      milestones: s.milestones || structuredClone(DEFAULT_MILESTONES),
+      metrics:    s.metrics    || structuredClone(DEFAULT_METRICS),
+      theme:      s.theme      || 'light'
+    };
+  } catch(e) {
+    return { milestones: structuredClone(DEFAULT_MILESTONES), metrics: structuredClone(DEFAULT_METRICS), theme: 'light' };
+  }
+}
+
+function save() { localStorage.setItem(STORE, JSON.stringify(state)); }
+
+let state = loadState();
+
+// ── Theme ──────────────────────────────────────────────────────
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeToggle').textContent = t === 'dark' ? '☀️' : '🌙';
+}
+
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(state.theme);
+  save();
+}
+
+// ── Progress ring ──────────────────────────────────────────────
+function updateRing() {
+  const ms = state.milestones;
+  const done = ms.filter(m => m.status === 'done').length;
+  const pct  = Math.round((done / ms.length) * 100);
+  const circ = 395.84;
+  const offset = circ * (1 - pct / 100);
+  document.getElementById('ringFill').style.strokeDashoffset = offset;
+  document.getElementById('ringPct').textContent = pct + '%';
+  document.getElementById('ringCaption').textContent =
+    `${done} of ${ms.length} milestones complete`;
+}
+
+// ── Milestones ─────────────────────────────────────────────────
+function progress() {
+  const ms = state.milestones;
+  const done    = ms.filter(m => m.status === 'done').length;
+  const ongoing = ms.filter(m => m.status === 'ongoing').length;
+  return { done, ongoing, planned: ms.length - done - ongoing, total: ms.length,
+           pct: Math.round(done / ms.length * 100) };
+}
+
+function renderTimeline() {
+  const { done, ongoing, planned, total, pct } = progress();
+  document.getElementById('msSummary').innerHTML =
+    `<span class="ms-stat"><strong>${done}</strong> Done</span>
+     <span class="ms-stat"><strong>${ongoing}</strong> In Progress</span>
+     <span class="ms-stat"><strong>${planned}</strong> Planned</span>
+     <span class="ms-stat"><strong>${pct}%</strong> Complete</span>`;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  document.getElementById('timeline').innerHTML = state.milestones.map(m => {
+    const badgeText = { done: '✓ Done', ongoing: '⟳ In Progress', planned: '◷ Planned' }[m.status];
+    const doneAt = m.completedAt ? `<span class="tl-done-at">✓ ${fmt(m.completedAt)}</span>` : '';
+    const notes  = m.notes ? `<div class="tl-notes">"${m.notes}"</div>` : '';
+    const acts   = [];
+    if (m.status !== 'done')    acts.push(`<button class="btn-xs btn-done-xs" onclick="openModal(${m.id})">Mark Done</button>`);
+    if (m.status === 'planned') acts.push(`<button class="btn-xs btn-prog-xs" onclick="setStatus(${m.id},'ongoing')">Mark In Progress</button>`);
+    if (m.status !== 'planned') acts.push(`<button class="btn-xs btn-reset-xs" onclick="setStatus(${m.id},'planned')">Reset to Planned</button>`);
+    return `
+    <div class="tl-item">
+      <div class="tl-dot-col">
+        <div class="tl-dot ${m.status}" title="${badgeText}"></div>
+      </div>
+      <div class="tl-card">
+        <div class="tl-header">
+          <div class="tl-title">${m.title}</div>
+          <div class="badge ${m.status}">${badgeText}</div>
+        </div>
+        <div class="tl-desc">${m.desc}</div>
+        <div class="tl-meta">
+          <span class="tl-day">🕐 ${m.day}</span>${doneAt}
+        </div>
+        ${notes}
+        <div class="tl-actions">${acts.join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  updateRing();
+}
+
+function fmt(s) {
+  if (!s) return '';
+  try { return new Date(s).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
+  catch(e){ return s; }
+}
+
+function setStatus(id, status) {
+  const m = state.milestones.find(x => x.id === id);
+  if (!m) return;
+  m.status = status;
+  if (status !== 'done') m.completedAt = null;
+  save(); renderTimeline();
+}
+
+// ── Modal ──────────────────────────────────────────────────────
+let modalId = null;
+function openModal(id) {
+  const m = state.milestones.find(x => x.id === id);
+  modalId = id;
+  document.getElementById('modalTitle').textContent = 'Mark as Done';
+  document.getElementById('modalSub').textContent   = m.title;
+  document.getElementById('modalDt').value          = nowLocal();
+  document.getElementById('modalNotes').value       = m.notes || '';
+  document.getElementById('modalConfirm').onclick   = confirmModal;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function confirmModal() {
+  const m = state.milestones.find(x => x.id === modalId);
+  if (!m) return;
+  m.status      = 'done';
+  m.completedAt = document.getElementById('modalDt').value;
+  m.notes       = document.getElementById('modalNotes').value.trim();
+  save(); closeModal(); renderTimeline();
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  modalId = null;
+}
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+function nowLocal() {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+}
+
+// ── Metrics ────────────────────────────────────────────────────
+function renderMetrics() {
+  document.getElementById('metricsGrid').innerHTML = state.metrics.map(m =>
+    `<div class="metric-card">
+      <div class="metric-icon">${m.icon}</div>
+      <div class="metric-value" id="mv-${m.id}"
+           contenteditable="true"
+           onblur="saveMetric('${m.id}',this)"
+           onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"
+           title="Click to edit">${m.value}</div>
+      <div class="metric-label">${m.label}</div>
+      <div class="metric-note">${m.note}</div>
+    </div>`
+  ).join('');
+}
+function saveMetric(id, el) {
+  const m = state.metrics.find(x => x.id === id);
+  if (m) m.value = el.textContent.trim();
+  save();
+}
+
+// ── Slides ─────────────────────────────────────────────────────
+let slide = 0;
+const TOTAL = 4;
+function initSlides() {
+  document.getElementById('slideDots').innerHTML =
+    Array.from({length: TOTAL}, (_,i) =>
+      `<div class="dot ${i===0?'active':''}" onclick="goSlide(${i})"></div>`
+    ).join('');
+}
+function goSlide(n) {
+  slide = Math.max(0, Math.min(TOTAL-1, n));
+  document.getElementById('slidesTrack').style.transform = `translateX(-${slide*100}%)`;
+  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i===slide));
+}
+function changeSlide(d) { goSlide(slide + d); }
+
+// ── Keyboard ───────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') changeSlide(1);
+  if (e.key === 'ArrowLeft')  changeSlide(-1);
+  if (e.key === 'Escape')     closeModal();
+});
+
+// ── Export / Import / Reset ────────────────────────────────────
+function exportState() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = Object.assign(document.createElement('a'),
+    {href: URL.createObjectURL(blob), download: 'parallax_dashboard.json'});
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function importState() {
+  const json = prompt('Paste exported JSON state here:');
+  if (!json) return;
+  try {
+    const s = JSON.parse(json);
+    state = { milestones: s.milestones || state.milestones,
+              metrics:    s.metrics    || state.metrics,
+              theme:      s.theme      || state.theme };
+    save(); applyTheme(state.theme); renderTimeline(); renderMetrics();
+  } catch(e) { alert('Invalid JSON — could not import state.'); }
+}
+function resetAll() {
+  if (!confirm('Reset all milestones and metrics to defaults?')) return;
+  state = { milestones: structuredClone(DEFAULT_MILESTONES),
+            metrics:    structuredClone(DEFAULT_METRICS), theme: state.theme };
+  save(); renderTimeline(); renderMetrics();
+}
+
+// ── Boot ───────────────────────────────────────────────────────
+applyTheme(state.theme);
+initSlides();
+renderTimeline();
+renderMetrics();
+setTimeout(updateRing, 400);
+</script>
+</body>
+</html>
