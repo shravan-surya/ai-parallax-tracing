@@ -79,6 +79,12 @@ h1{font-size:clamp(1.9rem,4.2vw,3rem);font-weight:800;line-height:1.1;margin-bot
 .team-chip-ai{border-color:color-mix(in srgb,#6e40c9 40%,transparent);background:color-mix(in srgb,#6e40c9 6%,var(--bg-card))}
 .team-avatar-ai{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#6e40c9,#0969da);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0}
 .team-name{font-size:.72rem;font-weight:600;color:var(--tx2);white-space:nowrap}
+/* Hero CTAs */
+.hero-ctas{display:flex;align-items:center;gap:.85rem;margin-top:1.6rem;flex-wrap:wrap}
+.btn-demo{display:inline-flex;align-items:center;gap:.45rem;background:var(--accent);color:#fff;font-size:.82rem;font-weight:700;padding:.6rem 1.3rem;border-radius:8px;text-decoration:none;box-shadow:0 2px 8px color-mix(in srgb,var(--accent) 35%,transparent);transition:filter .2s,transform .15s,box-shadow .2s;letter-spacing:.01em}
+.btn-demo:hover{filter:brightness(1.08);transform:translateY(-2px);box-shadow:0 4px 16px color-mix(in srgb,var(--accent) 40%,transparent)}
+.btn-ghost-sm{display:inline-flex;align-items:center;font-size:.8rem;font-weight:600;color:var(--tx2);padding:.55rem 1rem;border-radius:8px;border:1px solid var(--border);text-decoration:none;background:var(--bg-card);transition:border-color .2s,color .2s,transform .15s}
+.btn-ghost-sm:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
 /* Ring */
 .ring-wrap{display:flex;flex-direction:column;align-items:center;gap:.65rem}
 .ring-label-top{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
@@ -303,6 +309,12 @@ hr.div{border:none;border-top:1px solid var(--border);margin:0}
             <div class="team-chip"><span class="team-avatar">SS</span><span class="team-name">Suryanarayana, Shravan</span></div>
             <div class="team-chip team-chip-ai"><span class="team-avatar-ai">🤖</span><span class="team-name">GitHub Copilot</span></div>
           </div>
+        </div>
+        <div class="hero-ctas">
+          <a class="btn-demo" href="parallax_demo.html" target="_blank">
+            🎬 Live Demonstrator
+          </a>
+          <a class="btn-ghost-sm" href="#milestones">View Progress ↓</a>
         </div>
       </div>
       <div class="ring-wrap">
@@ -776,10 +788,10 @@ const DEFAULT_MILESTONES = [
     day:"Day 2 · Jul 15 21:01", completedAt:"2026-07-15T21:01", notes:"", commit:"8b0202b"
   },
   {
-    id:8, status:"planned",
+    id:8, status:"done",
     title:"MCP Tool — parallax_trace()",
-    desc:"Expose parallax_trace(signal) as an MCP tool callable from IDE, CI, and chat; return full chain with Git SHA, confidence, blast-radius and graph link",
-    day:"Day 3 · Morning", completedAt:null, notes:"", commit:""
+    desc:"3 MCP tools: kb_parallax_trace(signal, variant, depth) — BFS blast radius as markdown table; kb_parallax_signals(namespace, variant) — list RVM nodes; kb_parallax_bridge(signal, variant) — Elpis PDU/ECU path. Plus GET /api/parallax/query — natural-language keyword search with optional LLM enrichment via KB /api/ask",
+    day:"Day 3 · Jul 16 17:01", completedAt:"2026-07-16T17:01", notes:"", commit:"1ac56b0"
   },
   {
     id:9, status:"done",
@@ -804,6 +816,12 @@ const DEFAULT_MILESTONES = [
     title:"What-If Blast Radius + Pan/Zoom Diagram Modal",
     desc:"Interactive What-If analysis computes blast radius of a signal change across the full 4-layer chain; diagram modal renders real C4 SVGs with pan/zoom navigation; blast radius highlights all affected nodes in the Cytoscape graph",
     day:"Day 2 · Jul 16", completedAt:"2026-07-16T00:00", notes:"", commit:"1b326de"
+  },
+  {
+    id:13, status:"done", stretch:true,
+    title:"fcose Physics Layout + ECU Cluster View + Box Select",
+    desc:"Cytoscape graph upgraded to fcose force-directed physics layout (served locally — no CDN); ECU cluster view groups nodes by Zonal/Bridge/RVM domain; box-select multi-node highlight; Shuffle button re-randomizes positions; resize-on-tab-switch prevents blank canvas",
+    day:"Day 3 · Jul 16", completedAt:"2026-07-16T20:00", notes:"", commit:"932a5c9"
   }
 ];
 
@@ -813,12 +831,12 @@ const DEFAULT_METRICS = [
   {id:"bridge",  icon:"🌉", value:"48",    label:"Bridge Rules",      note:"routing-rules YAML"},
   {id:"edges",   icon:"↔",  value:"141",   label:"Flow Edges",        note:"v1_0 variant only"},
   {id:"ns",      icon:"📦", value:"10",    label:"Namespaces",        note:"cross-ECU namespaces"},
-  {id:"commits", icon:"⬡",  value:"28",    label:"Feature Commits",   note:"feature/parallax-tracer"},
+  {id:"commits", icon:"⬡",  value:"43",    label:"Feature Commits",   note:"feature/parallax-tracer"},
 ];
 
 // ═══════════════════════════════════════════════════════════════════
 
-const STORE = 'parallax_dash_v4';
+const STORE = 'parallax_dash_v5';
 
 function loadState(){
   try{

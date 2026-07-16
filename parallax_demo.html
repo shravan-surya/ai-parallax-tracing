@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parallax Signal Tracer — Hackathon Demo</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #263347;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --purple: #c084fc;
+    --orange: #fb923c;
+    --pink: #f472b6;
+
+    /* Node type colors */
+    --col-app:    #3b82f6;
+    --col-orch:   #8b5cf6;
+    --col-rvm:    #22c55e;
+    --col-elpis:  #f59e0b;
+    --col-ecu:    #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f2044 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 24px;
+  }
+  .header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+  .logo { font-size: 2.2rem; }
+  .header h1 { font-size: 1.75rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.02em; }
+  .header h1 span { color: var(--accent); }
+  .header p { color: var(--muted); font-size: .95rem; max-width: 640px; margin-top: 6px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; letter-spacing: .04em; margin-right: 8px; }
+  .badge-green  { background: #14532d; color: #4ade80; }
+  .badge-blue   { background: #172554; color: #60a5fa; }
+  .badge-yellow { background: #451a03; color: #fbbf24; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex; gap: 20px; flex-wrap: wrap; padding: 14px 40px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
+  .legend-dot  { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── Examples grid ── */
+  .examples { padding: 32px 40px; display: flex; flex-direction: column; gap: 40px; }
+
+  .example-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .example-header {
+    padding: 20px 28px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .ex-num {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 800; flex-shrink: 0;
+  }
+  .ex-num-1 { background: #172554; color: #60a5fa; }
+  .ex-num-2 { background: #3b0764; color: #c084fc; }
+  .ex-num-3 { background: #1a2e05; color: #86efac; }
+
+  .ex-title { font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
+  .ex-sub   { font-size: .85rem; color: var(--muted); }
+  .ex-pattern {
+    margin-left: auto; flex-shrink: 0;
+    font-size: .75rem; font-weight: 600;
+    padding: 4px 12px; border-radius: 99px;
+    background: var(--surface2); color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .example-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+
+  /* ── Flow diagram ── */
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 0; }
+  .flow-node {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 12px 16px; border-radius: 10px; border: 2px solid transparent;
+    min-width: 130px; text-align: center; position: relative;
+  }
+  .flow-node .node-icon  { font-size: 1.5rem; }
+  .flow-node .node-type  { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+  .flow-node .node-name  { font-size: .8rem; font-weight: 600; color: #f8fafc; word-break: break-all; }
+  .flow-node .node-sub   { font-size: .68rem; color: var(--muted); font-family: monospace; }
+
+  .fn-app   { background: #172554; border-color: var(--col-app); }
+  .fn-orch  { background: #2e1065; border-color: var(--col-orch); }
+  .fn-rvm   { background: #052e16; border-color: var(--col-rvm); }
+  .fn-elpis { background: #451a03; border-color: var(--col-elpis); }
+  .fn-ecu   { background: #450a0a; border-color: var(--col-ecu); }
+
+  .flow-arrow {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0 4px; gap: 3px; flex-shrink: 0;
+  }
+  .arrow-line {
+    height: 2px; width: 48px; position: relative;
+  }
+  .arrow-label { font-size: 9px; color: var(--muted); white-space: nowrap; text-align: center; max-width: 80px; }
+  .arrow-head  { font-size: 18px; line-height: 1; margin-top: -4px; }
+
+  .arr-blue   .arrow-line { background: var(--col-app);   }
+  .arr-purple .arrow-line { background: var(--col-orch);  }
+  .arr-green  .arrow-line { background: var(--col-rvm);   }
+  .arr-yellow .arrow-line { background: var(--col-elpis); }
+  .arr-red    .arrow-line { background: var(--col-ecu);   }
+  .arr-blue   .arrow-head { color: var(--col-app);   }
+  .arr-purple .arrow-head { color: var(--col-orch);  }
+  .arr-green  .arrow-head { color: var(--col-rvm);   }
+  .arr-yellow .arrow-head { color: var(--col-elpis); }
+  .arr-red    .arrow-head { color: var(--col-ecu);   }
+
+  /* ── Detail tables ── */
+  .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+  .detail-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .detail-card-header {
+    padding: 10px 16px;
+    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .detail-card-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .detail-row { display: flex; gap: 8px; font-size: 12px; }
+  .detail-key  { color: var(--muted); min-width: 110px; flex-shrink: 0; }
+  .detail-val  { color: var(--text); font-family: monospace; word-break: break-all; }
+  .detail-val.highlight { color: var(--accent); }
+  .detail-val.green     { color: var(--green); }
+  .detail-val.yellow    { color: var(--yellow); }
+  .detail-val.red       { color: var(--red); }
+  .detail-val.purple    { color: var(--purple); }
+
+  /* ── Code snippet ── */
+  .code-block {
+    background: #020817; border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden;
+  }
+  .code-block-header {
+    padding: 8px 14px; background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 8px;
+  }
+  .code-block pre {
+    padding: 14px 16px; font-size: 12px; line-height: 1.65;
+    color: #94a3b8; overflow-x: auto; font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .kw  { color: #c084fc; }
+  .fn  { color: #60a5fa; }
+  .str { color: #86efac; }
+  .cmt { color: #475569; }
+  .type { color: #fbbf24; }
+
+  /* ── Fanout section ── */
+  .fanout-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .fanout-service {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+    font-size: 11px; font-family: monospace; color: var(--green);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .fanout-arrow { font-size: 1.1rem; color: var(--col-elpis); }
+
+  /* ── Footer ── */
+  .footer {
+    margin: 20px 40px 40px;
+    padding: 16px 24px; border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .footer-logo { font-size: 1.5rem; }
+  .footer-text { font-size: .8rem; color: var(--muted); }
+  .footer-text strong { color: var(--text); }
+  .footer-links { margin-left: auto; display: flex; gap: 14px; }
+  .footer-link { font-size: .8rem; color: var(--accent); text-decoration: none; }
+  .footer-link:hover { text-decoration: underline; }
+
+  /* Separator label */
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: -6px;
+  }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+
+  @media (max-width: 768px) {
+    .examples { padding: 16px; }
+    .header { padding: 20px 16px; }
+    .flow { flex-direction: column; }
+    .flow-arrow { flex-direction: row; transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════ HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="logo">⚡</div>
+    <div>
+      <h1>Parallax <span>Signal Tracer</span></h1>
+    </div>
+  </div>
+  <div style="margin-bottom:10px">
+    <span class="badge badge-green">LIVE DATA</span>
+    <span class="badge badge-blue">3 Patterns</span>
+    <span class="badge badge-yellow">Hackathon Demo</span>
+  </div>
+  <p>End-to-end signal traceability across the SDV stack. From Android app code through the Parallax Vehicle Model (RVM), across the Elpis Gateway, to Zonal ECUs — automatically extracted from the firmware codebase.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--col-app)"></div>Android App (Kotlin)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--col-orch)"></div>Orchestrator</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--col-rvm)"></div>RVM / NATS subject</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--col-elpis)"></div>Elpis PDU / GW2</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--col-ecu)"></div>Zonal ECU</div>
+</div>
+
+<div class="examples">
+
+<!-- ══════════════════════════════════════════════════════════════════ EXAMPLE 1 -->
+<div class="example-card">
+  <div class="example-header">
+    <div class="ex-num ex-num-1">1</div>
+    <div>
+      <div class="ex-title">HVAC Fan Speed — Bidirectional State + Command</div>
+      <div class="ex-sub">App reads current fan speed from FZC, and sets a new speed back to FZC via Elpis GW2</div>
+    </div>
+    <div class="ex-pattern">Pattern A + B — State read &amp; Command write</div>
+  </div>
+  <div class="example-body">
+
+    <!-- Pattern A: ECU → App (state read) -->
+    <div class="section-label">Pattern A — State (FZC publishes → App subscribes)</div>
+    <div class="flow">
+      <div class="flow-node fn-ecu">
+        <div class="node-icon">🔧</div>
+        <div class="node-type">Zonal ECU</div>
+        <div class="node-name">FZC</div>
+        <div class="node-sub">Front Zone Controller</div>
+      </div>
+      <div class="flow-arrow arr-yellow">
+        <div class="arrow-label">ETH frame<br>VWG_HVAC_UI_Status<br>100ms cycle</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-elpis">
+        <div class="node-icon">🌉</div>
+        <div class="node-type">Elpis GW2</div>
+        <div class="node-name">XMMDROID</div>
+        <div class="node-sub">BackboneETH bridge</div>
+      </div>
+      <div class="flow-arrow arr-green">
+        <div class="arrow-label">NATS subject<br>STATE.VEHICLE.*.<br>climate.cabin.fan_speed</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-rvm">
+        <div class="node-icon">📡</div>
+        <div class="node-type">RVM property</div>
+        <div class="node-name">climate.cabin<br>.fan_speed</div>
+        <div class="node-sub">owner: VEHICLE_SERVICES</div>
+      </div>
+      <div class="flow-arrow arr-blue">
+        <div class="arrow-label">subscribe()</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-app">
+        <div class="node-icon">📱</div>
+        <div class="node-type">Android App</div>
+        <div class="node-name">ReferenceIviHvac</div>
+        <div class="node-sub">FanSpeedRepositoryImpl.kt</div>
+      </div>
+    </div>
+
+    <!-- Pattern B: App → ECU (command write) -->
+    <div class="section-label" style="margin-top:12px">Pattern B — Command (App publishes → FZC actuates)</div>
+    <div class="flow">
+      <div class="flow-node fn-app">
+        <div class="node-icon">📱</div>
+        <div class="node-type">Android App</div>
+        <div class="node-name">ReferenceIviHvac</div>
+        <div class="node-sub">FanSpeedRepositoryImpl.kt</div>
+      </div>
+      <div class="flow-arrow arr-blue">
+        <div class="arrow-label">publish()</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-rvm">
+        <div class="node-icon">📡</div>
+        <div class="node-type">RVM service</div>
+        <div class="node-name">climate.cabin<br>.set_fan_speed</div>
+        <div class="node-sub">SERVICE.VSVC.*</div>
+      </div>
+      <div class="flow-arrow arr-yellow">
+        <div class="arrow-label">bridge rule<br>parallax_to_elpis</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-elpis">
+        <div class="node-icon">🌉</div>
+        <div class="node-type">Elpis GW2</div>
+        <div class="node-name">XMMDROID</div>
+        <div class="node-sub">VWG_XMM_HVAC_Requests</div>
+      </div>
+      <div class="flow-arrow arr-red">
+        <div class="arrow-label">ETH frame<br>BackboneETH<br>100ms cycle</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-ecu">
+        <div class="node-icon">🔧</div>
+        <div class="node-type">Zonal ECU</div>
+        <div class="node-name">FZC</div>
+        <div class="node-sub">Front Zone Controller</div>
+      </div>
+    </div>
+
+    <!-- Detail cards -->
+    <div class="detail-grid">
+      <div class="detail-card">
+        <div class="detail-card-header" style="background:#052e16;color:#4ade80">📡 RVM Signals (climate.cabin)</div>
+        <div class="detail-card-body">
+          <div class="detail-row"><span class="detail-key">Property</span><span class="detail-val highlight">fan_speed</span></div>
+          <div class="detail-row"><span class="detail-key">NATS (read)</span><span class="detail-val" style="font-size:10px">STATE.VEHICLE.*.climate.cabin.fan_speed</span></div>
+          <div class="detail-row"><span class="detail-key">Service</span><span class="detail-val highlight">set_fan_speed</span></div>
+          <div class="detail-row"><span class="detail-key">NATS (cmd)</span><span class="detail-val" style="font-size:10px">SERVICE.VSVC.climate.cabin.set_fan_speed</span></div>
+          <div class="detail-row"><span class="detail-key">Owner</span><span class="detail-val green">VEHICLE_SERVICES</span></div>
+          <div class="detail-row"><span class="detail-key">Scope</span><span class="detail-val">VEHICLE</span></div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-header" style="background:#451a03;color:#fbbf24">🌉 Elpis Bridge Rules</div>
+        <div class="detail-card-body">
+          <div class="detail-row"><span class="detail-key">PDU (state)</span><span class="detail-val yellow">VWG_HVAC_UI_Status</span></div>
+          <div class="detail-row"><span class="detail-key">PDU (cmd)</span><span class="detail-val yellow">VWG_XMM_HVAC_Requests</span></div>
+          <div class="detail-row"><span class="detail-key">Bus</span><span class="detail-val">BackboneETH (Ethernet)</span></div>
+          <div class="detail-row"><span class="detail-key">Cycle time</span><span class="detail-val">100 ms</span></div>
+          <div class="detail-row"><span class="detail-key">ECU sender</span><span class="detail-val red">FZC → XMMDROID</span></div>
+          <div class="detail-row"><span class="detail-key">Receivers</span><span class="detail-val">BZC, XMMDROID, TestTool</span></div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-header" style="background:#172554;color:#60a5fa">📱 App Code Reference</div>
+        <div class="detail-card-body">
+          <div class="detail-row"><span class="detail-key">App</span><span class="detail-val highlight">ReferenceIviHvac</span></div>
+          <div class="detail-row"><span class="detail-key">Pattern</span><span class="detail-val green">subscribe + publish</span></div>
+          <div class="detail-row"><span class="detail-key">File</span><span class="detail-val" style="font-size:10px">ecu/lagvm/apps/ReferenceIviHvac/<br>FanSpeedRepositoryImpl.kt</span></div>
+          <div class="detail-row"><span class="detail-key">API reads</span><span class="detail-val">climateClient.fanSpeed()</span></div>
+          <div class="detail-row"><span class="detail-key">API writes</span><span class="detail-val">climateClient.setFanSpeed()</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header">📄 FanSpeedRepositoryImpl.kt — Subscribe + Command pattern</div>
+      <pre><span class="cmt">// STATE: Subscribe to FZC-published fan speed (ECU → App)</span>
+<span class="kw">val</span> fanSpeed: <span class="type">Flow</span>&lt;<span class="type">FanSpeed</span>&gt; = climateCabinClient
+    .<span class="fn">fanSpeed</span>()                          <span class="cmt">// STATE.VEHICLE.*.climate.cabin.fan_speed</span>
+    .map { it.value }
+
+<span class="cmt">// COMMAND: Publish set request to EGW2 → FZC (App → ECU)</span>
+<span class="kw">suspend fun</span> <span class="fn">setFanSpeed</span>(level: <span class="type">Int</span>) {
+    climateCabinClient.<span class="fn">setFanSpeed</span>(           <span class="cmt">// SERVICE.VSVC.climate.cabin.set_fan_speed</span>
+        setFanSpeedRequest { fanSpeedLevel = level }
+    )
+    <span class="cmt">// → Elpis GW2 maps to VWG_XMM_HVAC_Requests PDU → FZC (BackboneETH, 100ms)</span>
+}</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ EXAMPLE 2 -->
+<div class="example-card">
+  <div class="example-header">
+    <div class="ex-num ex-num-2">2</div>
+    <div>
+      <div class="ex-title">Audio Volume — ETH Service Request</div>
+      <div class="ex-sub">SystemUI app sets media volume → Elpis GW2 → XMM amplifier ECU via BackboneETH</div>
+    </div>
+    <div class="ex-pattern">Pattern A — App Command → ECU Actuation</div>
+  </div>
+  <div class="example-body">
+
+    <div class="flow">
+      <div class="flow-node fn-app">
+        <div class="node-icon">📱</div>
+        <div class="node-type">Android App</div>
+        <div class="node-name">ReferenceSystemUI</div>
+        <div class="node-sub">VolumeSliderViewModel.kt</div>
+      </div>
+      <div class="flow-arrow arr-blue">
+        <div class="arrow-label">publish(volume)</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-rvm">
+        <div class="node-icon">📡</div>
+        <div class="node-type">RVM service</div>
+        <div class="node-name">audio.amplifier<br>.set_media_volume</div>
+        <div class="node-sub">SERVICE.VSVC.*</div>
+      </div>
+      <div class="flow-arrow arr-yellow">
+        <div class="arrow-label">bridge rule<br>parallax_to_elpis</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-elpis">
+        <div class="node-icon">🌉</div>
+        <div class="node-type">Elpis GW2</div>
+        <div class="node-name">XMMDROID</div>
+        <div class="node-sub">XMM_VWG_Amplifier_Req</div>
+      </div>
+      <div class="flow-arrow arr-red">
+        <div class="arrow-label">ETH frame<br>BackboneETH</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-ecu">
+        <div class="node-icon">🔊</div>
+        <div class="node-type">Zonal ECU</div>
+        <div class="node-name">XMM</div>
+        <div class="node-sub">Audio Amplifier</div>
+      </div>
+    </div>
+
+    <!-- Return path -->
+    <div class="section-label">Return path — ECU status back to App</div>
+    <div class="flow">
+      <div class="flow-node fn-ecu">
+        <div class="node-icon">🔊</div>
+        <div class="node-type">Zonal ECU</div>
+        <div class="node-name">XMM</div>
+        <div class="node-sub">Actual volume state</div>
+      </div>
+      <div class="flow-arrow arr-yellow">
+        <div class="arrow-label">ETH frame<br>XMM_VWG_Amplifier_Status</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-elpis">
+        <div class="node-icon">🌉</div>
+        <div class="node-type">Elpis GW2</div>
+        <div class="node-name">XMMDROID</div>
+        <div class="node-sub">BackboneETH bridge</div>
+      </div>
+      <div class="flow-arrow arr-green">
+        <div class="arrow-label">elpis_to_parallax<br>bridge rule</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-rvm">
+        <div class="node-icon">📡</div>
+        <div class="node-type">RVM property</div>
+        <div class="node-name">audio.amplifier<br>.media_volume</div>
+        <div class="node-sub">STATE.VEHICLE.*</div>
+      </div>
+      <div class="flow-arrow arr-blue">
+        <div class="arrow-label">subscribe()</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-app">
+        <div class="node-icon">📱</div>
+        <div class="node-type">Android App</div>
+        <div class="node-name">ReferenceSystemUI</div>
+        <div class="node-sub">Volume slider update</div>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <div class="detail-card-header" style="background:#052e16;color:#4ade80">📡 RVM Signals (audio.amplifier)</div>
+        <div class="detail-card-body">
+          <div class="detail-row"><span class="detail-key">Service</span><span class="detail-val highlight">set_media_volume</span></div>
+          <div class="detail-row"><span class="detail-key">Property</span><span class="detail-val highlight">media_volume</span></div>
+          <div class="detail-row"><span class="detail-key">NATS (cmd)</span><span class="detail-val" style="font-size:10px">SERVICE.VSVC.audio.amplifier.set_media_volume</span></div>
+          <div class="detail-row"><span class="detail-key">NATS (state)</span><span class="detail-val" style="font-size:10px">STATE.VEHICLE.*.audio.amplifier.media_volume</span></div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-header" style="background:#451a03;color:#fbbf24">🌉 Elpis Bridge Rules</div>
+        <div class="detail-card-body">
+          <div class="detail-row"><span class="detail-key">PDU (cmd)</span><span class="detail-val yellow">XMM_VWG_Amplifier_Req</span></div>
+          <div class="detail-row"><span class="detail-key">PDU (status)</span><span class="detail-val yellow">XMM_VWG_Amplifier_Status</span></div>
+          <div class="detail-row"><span class="detail-key">Bus</span><span class="detail-val">BackboneETH (Ethernet)</span></div>
+          <div class="detail-row"><span class="detail-key">Cmd sender</span><span class="detail-val">XMMDROID → XMM</span></div>
+          <div class="detail-row"><span class="detail-key">Status sender</span><span class="detail-val red">XMM → XMMDROID</span></div>
+          <div class="detail-row"><span class="detail-key">Receivers</span><span class="detail-val">XMM, TestTool</span></div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-header" style="background:#172554;color:#60a5fa">📱 App Code Reference</div>
+        <div class="detail-card-body">
+          <div class="detail-row"><span class="detail-key">App</span><span class="detail-val highlight">ReferenceSystemUI</span></div>
+          <div class="detail-row"><span class="detail-key">Pattern</span><span class="detail-val green">publish command</span></div>
+          <div class="detail-row"><span class="detail-key">File</span><span class="detail-val" style="font-size:10px">ecu/lagvm/apps/ReferenceSystemUI/<br>VolumeSliderViewModel.kt</span></div>
+          <div class="detail-row"><span class="detail-key">API</span><span class="detail-val">amplifierClient.setMediaVolume()</span></div>
+          <div class="detail-row"><span class="detail-key">Module</span><span class="detail-val">audio.amplifier</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header">📄 VolumeSliderViewModel.kt — Service request pattern</div>
+      <pre><span class="cmt">// COMMAND: User slides volume → set request → XMM amplifier ECU</span>
+<span class="kw">fun</span> <span class="fn">onVolumeChanged</span>(level: <span class="type">Int</span>) {
+    viewModelScope.launch {
+        amplifierClient.<span class="fn">setMediaVolume</span>(        <span class="cmt">// SERVICE.VSVC.audio.amplifier.set_media_volume</span>
+            setMediaVolumeRequest { volume = level }
+        )
+        <span class="cmt">// → Elpis GW2 (XMMDROID): XMM_VWG_Amplifier_Req PDU → XMM ECU (BackboneETH)</span>
+        <span class="cmt">// ← Status: XMM_VWG_Amplifier_Status PDU → media_volume property update</span>
+    }
+}</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ EXAMPLE 3 -->
+<div class="example-card">
+  <div class="example-header">
+    <div class="ex-num ex-num-3">3</div>
+    <div>
+      <div class="ex-title">Drive Mode — Orchestrator Fan-out (1 → 6 sub-services)</div>
+      <div class="ex-sub">App requests drive mode change → Orchestrator decomposes into 6 sub-service calls → Elpis GW2 → FZC/TVM</div>
+    </div>
+    <div class="ex-pattern">Pattern C — App → Orchestrator → Multi-ECU fan-out</div>
+  </div>
+  <div class="example-body">
+
+    <!-- High-level flow -->
+    <div class="section-label">High-level signal chain</div>
+    <div class="flow">
+      <div class="flow-node fn-app">
+        <div class="node-icon">📱</div>
+        <div class="node-type">Android App</div>
+        <div class="node-name">ReferenceIvi<br>DriveModes</div>
+        <div class="node-sub">DriveModeRepositoryImpl.kt</div>
+      </div>
+      <div class="flow-arrow arr-blue">
+        <div class="arrow-label">setDriveMode()<br>service call</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-rvm">
+        <div class="node-icon">📡</div>
+        <div class="node-type">RVM service</div>
+        <div class="node-name">vehicle.dynamics<br>.set_drive_mode</div>
+        <div class="node-sub">SERVICE.VSVC.*<br>scope: GLOBAL_VSVC</div>
+      </div>
+      <div class="flow-arrow arr-purple">
+        <div class="arrow-label">handleSetDriveMode<br>Requests()</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-orch">
+        <div class="node-icon">🎛</div>
+        <div class="node-type">Orchestrator</div>
+        <div class="node-name">Orchestrator App</div>
+        <div class="node-sub">DriveModes.kt:76<br>applyRecipe()</div>
+      </div>
+      <div class="flow-arrow arr-yellow">
+        <div class="arrow-label">6 sub-service<br>calls to GW2</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-elpis">
+        <div class="node-icon">🌉</div>
+        <div class="node-type">Elpis GW2</div>
+        <div class="node-name">XMMDROID</div>
+        <div class="node-sub">VDM_XMM_Drv* PDUs</div>
+      </div>
+      <div class="flow-arrow arr-red">
+        <div class="arrow-label">ETH frames<br>BackboneETH</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-ecu">
+        <div class="node-icon">⚡</div>
+        <div class="node-type">Zonal ECUs</div>
+        <div class="node-name">FZC / TVM</div>
+        <div class="node-sub">Propulsion, dynamics,<br>suspension systems</div>
+      </div>
+    </div>
+
+    <!-- Orchestrator fanout detail -->
+    <div class="section-label">Orchestrator fan-out — 1 input → 6 sub-services (DriveModes.kt)</div>
+    <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <div style="background:#2e1065;border:2px solid var(--col-orch);border-radius:10px;padding:14px 18px;min-width:220px">
+        <div style="font-size:10px;font-weight:700;color:#c084fc;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Input service</div>
+        <div style="font-size:.85rem;font-family:monospace;color:#e2e8f0">vehicle.dynamics<br>.set_drive_mode</div>
+        <div style="font-size:.7rem;color:#94a3b8;margin-top:4px">handleSetDriveModeRequests()</div>
+      </div>
+      <div style="display:flex;flex-direction:column;justify-content:center;font-size:1.5rem;color:var(--col-orch);padding:8px 0">→</div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#fbbf24;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Output sub-services (applyRecipe)</div>
+        <div class="fanout-grid">
+          <div class="fanout-service"><span class="fanout-arrow">↗</span>set_accel_pedal_map_profile</div>
+          <div class="fanout-service"><span class="fanout-arrow">↗</span>set_regenerative_braking_profile</div>
+          <div class="fanout-service"><span class="fanout-arrow">↗</span>set_steering_response_profile</div>
+          <div class="fanout-service"><span class="fanout-arrow">↗</span>set_torque_differential_profile</div>
+          <div class="fanout-service"><span class="fanout-arrow">↗</span>set_traction_control_profile</div>
+          <div class="fanout-service"><span class="fanout-arrow">↗</span>set_electronic_stability_control_profile</div>
+        </div>
+        <div style="font-size:.7rem;color:#94a3b8;margin-top:8px">Each sub-service → Elpis GW2 → VDM_AchDrvModeStates PDU → FZC/TVM</div>
+      </div>
+    </div>
+
+    <!-- Elpis state feedback -->
+    <div class="section-label">Achieved state feedback — ECU → App (via VDM_AchDrvModeStates)</div>
+    <div class="flow">
+      <div class="flow-node fn-ecu">
+        <div class="node-icon">⚡</div>
+        <div class="node-type">Zonal ECU</div>
+        <div class="node-name">FZC</div>
+        <div class="node-sub">Vehicle Dynamics Mgr</div>
+      </div>
+      <div class="flow-arrow arr-yellow">
+        <div class="arrow-label">ETH frame<br>VDM_AchDrvModeStates<br>BackboneETH</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-elpis">
+        <div class="node-icon">🌉</div>
+        <div class="node-type">Elpis GW2</div>
+        <div class="node-name">XMMDROID</div>
+        <div class="node-sub">elpis_to_parallax bridge</div>
+      </div>
+      <div class="flow-arrow arr-green">
+        <div class="arrow-label">8 RVM properties<br>updated</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-rvm">
+        <div class="node-icon">📡</div>
+        <div class="node-type">RVM properties</div>
+        <div class="node-name">vehicle.dynamics<br>.drive_mode + 7 more</div>
+        <div class="node-sub">accel_pedal_map,<br>traction_control…</div>
+      </div>
+      <div class="flow-arrow arr-blue">
+        <div class="arrow-label">subscribe()</div>
+        <div class="arrow-line"></div>
+        <div class="arrow-head">›</div>
+      </div>
+      <div class="flow-node fn-app">
+        <div class="node-icon">📱</div>
+        <div class="node-type">Android Apps</div>
+        <div class="node-name">IviDriveModes<br>RVWHome<br>IviEnergy</div>
+        <div class="node-sub">3 apps observe state</div>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <div class="detail-card-header" style="background:#052e16;color:#4ade80">📡 RVM — vehicle.dynamics namespace</div>
+        <div class="detail-card-body">
+          <div class="detail-row"><span class="detail-key">Input service</span><span class="detail-val highlight">set_drive_mode</span></div>
+          <div class="detail-row"><span class="detail-key">Output prop</span><span class="detail-val highlight">drive_mode</span></div>
+          <div class="detail-row"><span class="detail-key">Owner</span><span class="detail-val green">VEHICLE_SERVICES</span></div>
+          <div class="detail-row"><span class="detail-key">Scope</span><span class="detail-val">GLOBAL_VSVC</span></div>
+          <div class="detail-row"><span class="detail-key">Sub-services</span><span class="detail-val">× 6 via Orchestrator</span></div>
+          <div class="detail-row"><span class="detail-key">State props</span><span class="detail-val">× 8 from VDM_AchDrvModeStates</span></div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-header" style="background:#451a03;color:#fbbf24">🌉 Elpis Bridge — Achieved State</div>
+        <div class="detail-card-body">
+          <div class="detail-row"><span class="detail-key">PDU</span><span class="detail-val yellow">VDM_AchDrvModeStates</span></div>
+          <div class="detail-row"><span class="detail-key">Bus</span><span class="detail-val">BackboneETH (Ethernet)</span></div>
+          <div class="detail-row"><span class="detail-key">Sender ECU</span><span class="detail-val red">FZC</span></div>
+          <div class="detail-row"><span class="detail-key">Receivers</span><span class="detail-val">XMMDROID, TVM, TestTool</span></div>
+          <div class="detail-row"><span class="detail-key">Maps to</span><span class="detail-val">8 RVM properties</span></div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-header" style="background:#2e1065;color:#c084fc">🎛 Orchestrator Role</div>
+        <div class="detail-card-body">
+          <div class="detail-row"><span class="detail-key">App</span><span class="detail-val highlight">Orchestrator</span></div>
+          <div class="detail-row"><span class="detail-key">File</span><span class="detail-val" style="font-size:10px">protected/vwg/ecu/lagvm/apps/<br>orchestrator/DriveModes.kt:76</span></div>
+          <div class="detail-row"><span class="detail-key">Handles</span><span class="detail-val purple">handleSetDriveModeRequests()</span></div>
+          <div class="detail-row"><span class="detail-key">Applies</span><span class="detail-val">applyRecipe(DriveModeRecipe)</span></div>
+          <div class="detail-row"><span class="detail-key">Fan-out</span><span class="detail-val green">1 → 6 sub-services</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header">📄 DriveModes.kt:76 — Orchestrator fan-out pattern</div>
+      <pre><span class="cmt">// STEP 1: App publishes set_drive_mode service request</span>
+client.<span class="fn">setDriveMode</span>(SetDriveModeRequest.newBuilder().<span class="fn">setModeId</span>(id).build())
+
+<span class="cmt">// STEP 2: Orchestrator handles the request and maps to a recipe</span>
+<span class="kw">override fun</span> CoroutineScope.<span class="fn">vehicleModelHandlers</span>() {
+    launch {
+        vehicleDynamicsClient.<span class="fn">handleSetDriveModeRequests</span>().collect { req ->
+            <span class="kw">val</span> recipe = DriveModeRecipeMapper.<span class="fn">getRecipe</span>(req.value.modeId)
+            <span class="fn">handleRequest</span>(req, REQUEST_TIMEOUT) { <span class="fn">applyRecipe</span>(recipe) }
+        }
+    }
+}
+
+<span class="cmt">// STEP 3: applyRecipe() fan-outs to 6 sub-service calls → EGW2 → FZC/TVM</span>
+<span class="kw">private suspend fun</span> <span class="fn">applyRecipe</span>(recipe: <span class="type">DriveModeRecipe</span>) {
+    recipe.acceleratorPedalMapProfile?.let { vehicleDynamicsClient.<span class="fn">setAccelPedalMapProfile</span>(...) }
+    recipe.regenBrakingGearDProfile?.let  { vehicleDynamicsClient.<span class="fn">setRegenerativeBrakingProfile</span>(...) }
+    recipe.steeringFrontAxleProfile?.let  { vehicleDynamicsClient.<span class="fn">setSteeringResponseProfile</span>(...) }
+    recipe.brakeTorqueVectoringProfile?.let { vehicleDynamicsClient.<span class="fn">setTorqueDifferentialProfile</span>(...) }
+    recipe.tractionControlProfile?.let    { vehicleDynamicsClient.<span class="fn">setTractionControlProfile</span>(...) }
+    recipe.escProfile?.let                { vehicleDynamicsClient.<span class="fn">setElectronicStabilityControlProfile</span>(...) }
+    <span class="cmt">// Each call → Elpis GW2 → VDM_XMM_DrvMode* PDU → FZC/TVM (BackboneETH)</span>
+}</pre>
+    </div>
+
+  </div>
+</div>
+<!-- end examples -->
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ FOOTER -->
+<div class="footer">
+  <div class="footer-logo">⚡</div>
+  <div class="footer-text">
+    <strong>Parallax Signal Tracer</strong> — Phase 46 Hackathon Demo<br>
+    All data extracted automatically from firmware codebase · 168 RVM nodes · 2236 Elpis signals · 48 bridge rules · 141 flow edges
+  </div>
+  <div class="footer-links">
+    <a href="http://localhost:8501/parallax/portal" class="footer-link">🚀 Live Portal</a>
+    <a href="http://localhost:8501/parallax/portal#graph" class="footer-link">🕸 Signal Graph</a>
+    <a href="http://localhost:8501/parallax/portal#whatif" class="footer-link">💥 What-If Analysis</a>
+    <a href="http://localhost:8501/api/parallax/query?q=fan_speed" class="footer-link">🔍 API</a>
+  </div>
+</div>
+
+</body>
+</html>

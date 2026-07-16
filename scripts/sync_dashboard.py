@@ -72,9 +72,10 @@ RULES = [
     },
     {
         "id": 8, "title": "MCP Tool — parallax_trace()",
-        # Use word-boundary anchor so we don't match the 'parallax_tracer' dir name
         "files":    [r"mcp_tool", r"mcp_parallax", r"parallax_mcp"],
-        "keywords": ["parallax_trace()", "mcp tool", "mcp integration", "mcp parallax"],
+        "keywords": ["parallax_trace()", "mcp tool", "mcp integration", "mcp parallax",
+                     "kb_parallax_trace", "kb_parallax_signals", "kb_parallax_bridge",
+                     "mcp tools", "/query api", "query api"],
     },
     {
         "id": 9, "title": "Cytoscape Visualization & Final Demo",
@@ -100,6 +101,12 @@ RULES = [
         "files":    [],
         "keywords": ["what-if", "blast radius", "pan/zoom", "pan-zoom",
                      "diagram modal", "svg rendering"],
+    },
+    {
+        "id": 13, "title": "fcose Physics Layout + ECU Cluster View + Box Select",
+        "files":    [r"cytoscape-fcose", r"cose-base", r"layout-base"],
+        "keywords": ["fcose", "fcose layout", "ecu cluster", "cluster view",
+                     "box-select", "box select", "shuffle button"],
     },
 ]
 
