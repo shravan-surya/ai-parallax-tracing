@@ -57,7 +57,7 @@ h2{font-size:clamp(1.4rem,2.8vw,2rem);font-weight:700;margin-bottom:.6rem;line-h
 p.lead{font-size:.97rem;color:var(--tx2);max-width:680px;margin-bottom:1.75rem}
 
 /* ── HERO ───────────────────────────────────────────────────────── */
-#hero{min-height:100vh;padding-top:5rem;display:flex;align-items:center;
+#hero{min-height:88vh;padding-top:5rem;display:flex;align-items:center;
   background:radial-gradient(ellipse at 10% 60%,rgba(9,105,218,.07) 0%,transparent 55%),
              radial-gradient(ellipse at 88% 20%,rgba(110,64,201,.05) 0%,transparent 55%),
              var(--bg);border-bottom:1px solid var(--border)}
@@ -205,9 +205,9 @@ h1{font-size:clamp(1.9rem,4.2vw,3rem);font-weight:800;line-height:1.1;margin-bot
 [data-theme=dark] .stretch-tag{background:#2a0f4a;border-color:#5b21b6;color:#c084fc}
 
 /* ── METRICS ─────────────────────────────────────────────────────── */
-#metrics{background:var(--bg)}
-.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.7rem;margin-top:1.6rem}
-.metric-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem 1.1rem;text-align:center;box-shadow:var(--shadow-s);transition:box-shadow .2s,transform .2s}
+#metrics{background:var(--bg-card);border-bottom:2px solid var(--border)}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.7rem;margin-top:1.4rem}
+.metric-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem 1.1rem;text-align:center;box-shadow:var(--shadow-s);transition:box-shadow .2s,transform .2s}
 .metric-card:hover{box-shadow:var(--shadow-m);transform:translateY(-2px)}
 .metric-icon{font-size:1.5rem;margin-bottom:.5rem}
 .metric-val{font-size:2rem;font-weight:800;color:var(--accent);line-height:1;outline:none;border-radius:4px;padding:0 2px;cursor:text;transition:background .15s;display:inline-block;min-width:2ch}
@@ -256,10 +256,10 @@ hr.div{border:none;border-top:1px solid var(--border);margin:0}
 <nav>
   <div class="nav-brand">⬡ AI Parallax Tracer</div>
   <ul class="nav-links">
+    <li><a href="#metrics">At a Glance</a></li>
     <li><a href="#problem">Problem</a></li>
     <li><a href="#solution">Solution</a></li>
     <li><a href="#milestones">Milestones</a></li>
-    <li><a href="#metrics">Metrics</a></li>
   </ul>
   <div class="nav-right">
     <div class="sync-indicator" id="syncIndicator" style="display:none">
@@ -301,6 +301,20 @@ hr.div{border:none;border-top:1px solid var(--border);margin:0}
         <div class="ring-caption" id="ringCaption">Loading…</div>
       </div>
     </div>
+  </div>
+</section>
+
+<section id="metrics">
+  <div class="container">
+    <div style="display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;margin-bottom:.25rem">
+      <div class="section-label" style="margin-bottom:0">Live Scan Data</div>
+      <span style="font-size:.72rem;font-weight:600;color:var(--green);background:color-mix(in srgb,var(--green) 12%,transparent);border:1px solid color-mix(in srgb,var(--green) 30%,transparent);padding:.15rem .6rem;border-radius:999px;letter-spacing:.04em">
+        ✓ 2026-07-16 09:57 · variant v1_0 · complete
+      </span>
+    </div>
+    <h2>Solution at a Glance</h2>
+    <p class="lead">Real numbers from the last firmware scan. Click any value to update it live.</p>
+    <div class="metrics-grid" id="metricsGrid"></div>
   </div>
 </section>
 
@@ -616,15 +630,6 @@ flowchart TD
 </section>
 
 <!-- ═══ METRICS ═══ -->
-<section id="metrics">
-  <div class="container">
-    <div class="section-label">04 — Key Metrics</div>
-    <h2>Solution at a Glance</h2>
-    <p class="lead">Click any number to edit it live — updates save automatically in your browser.</p>
-    <div class="metrics-grid" id="metricsGrid"></div>
-  </div>
-</section>
-
 <hr class="div">
 <footer>
   <div><strong>AI Parallax Tracer</strong> · Hackathon 2026 ·
@@ -783,12 +788,12 @@ const DEFAULT_MILESTONES = [
 ];
 
 const DEFAULT_METRICS = [
-  {id:"repos",   icon:"🗂️", value:"4",    label:"Repos Covered",      note:"RVM · EGW2 · RAL · Kotlin"},
-  {id:"parsers", icon:"⚙️", value:"5",    label:"Signal Parsers",     note:"L1–L5, all layers"},
-  {id:"signals", icon:"📡", value:"50+",  label:"Signals in Scope",   note:"v1_0 variant only"},
-  {id:"commits", icon:"⬡",  value:"28",   label:"Feature Commits",    note:"feature/parallax-tracer"},
-  {id:"portal",  icon:"🖥️", value:"1",    label:"Portal Pages",       note:"/parallax/portal live"},
-  {id:"migrations", icon:"🗄️", value:"8",  label:"DB Migrations",     note:"001–008, full schema"},
+  {id:"rvm",      icon:"🔌", value:"168",   label:"RVM Nodes",         note:"interfaces/parallax/ scan"},
+  {id:"elpis",   icon:"📶", value:"2,236", label:"Elpis Signals",     note:"elpis signal corpus"},
+  {id:"bridge",  icon:"🌉", value:"48",    label:"Bridge Rules",      note:"routing-rules YAML"},
+  {id:"edges",   icon:"↔",  value:"141",   label:"Flow Edges",        note:"v1_0 variant only"},
+  {id:"ns",      icon:"📦", value:"10",    label:"Namespaces",        note:"cross-ECU namespaces"},
+  {id:"commits", icon:"⬡",  value:"28",    label:"Feature Commits",   note:"feature/parallax-tracer"},
 ];
 
 // ═══════════════════════════════════════════════════════════════════
