@@ -56,11 +56,13 @@ RULES = [
         "keywords": ["provenance", "scan_run", "repo_ref", "file_manifest"],
     },
     {
-        "id": 6, "title": "AI Skills & SKILL.md Contracts",
-        # Intentionally narrow: skill.md or skills/parallax dir only (not SQL migrations)
-        "files":    [r"skills/parallax", r"parallax.*SKILL\.md",
+        "id": 6, "title": "AI Diagram Narrator (Offline LLM)",
+        # parallax_narrator.py + 008_c4_narrative migration
+        "files":    [r"parallax_narrator", r"008_c4_narrative",
+                     r"skills/parallax", r"parallax.*SKILL\.md",
                      r"parallax.*populator\.py", r"parallax.*skill_schema"],
-        "keywords": ["skill.md", "populator", "skill contract", "parallax skill"],
+        "keywords": ["narrator", "huggingface", "offline llm", "diagram narrator",
+                     "skill.md", "populator", "skill contract", "parallax skill"],
     },
     {
         "id": 7, "title": "Live Signal Mining on Firmware Codebase",
@@ -79,6 +81,25 @@ RULES = [
         "files":    [r"c4_generator"],
         "keywords": ["parallax-portal", "interactive graph", "blast diagram", "c4 plantuml",
                      "plantuml", "parallax-46b", "cytoscape", "tool panels", "js panels"],
+    },
+    # ── Stretch goals (ids 10-12) ─────────────────────────────────────────
+    {
+        "id": 10, "title": "Full G1+G2+G3 — App→RVM→Elpis→Zonal 4-Layer Chain",
+        "files":    [r"004_zonal_nodes", r"005_dedup_and_edge_types", r"006_g2b_bridge"],
+        "keywords": ["G1+G2+G3", "full app", "elpis", "zonal chain",
+                     "4-layer", "four-layer", "complete chain"],
+    },
+    {
+        "id": 11, "title": "Bidirectional BFS Signal Search + Diagram Store",
+        "files":    [r"diagram_store", r"007_c4_diagrams_store"],
+        "keywords": ["bidirectional bfs", "bidirectional", "bfs", "diagram store",
+                     "source/diagram toggle"],
+    },
+    {
+        "id": 12, "title": "What-If Blast Radius + Pan/Zoom Diagram Modal",
+        "files":    [],
+        "keywords": ["what-if", "blast radius", "pan/zoom", "pan-zoom",
+                     "diagram modal", "svg rendering"],
     },
 ]
 

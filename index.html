@@ -739,10 +739,10 @@ const DEFAULT_MILESTONES = [
     day:"Day 1 · Jul 15 19:55", completedAt:"2026-07-15T19:55", notes:"", commit:"e2049e7"
   },
   {
-    id:6, status:"ongoing",
-    title:"AI Skills & SKILL.md Contracts",
-    desc:"Signal trace skill, blast-radius skill, variant-diff skill — SKILL.md contracts, tab_registry sections, schema validation, and populator wiring",
-    day:"Day 2 · Morning", completedAt:null, notes:"", commit:""
+    id:6, status:"done",
+    title:"AI Diagram Narrator (Offline LLM)",
+    desc:"parallax_narrator.py uses a local HuggingFace model (no internet required) to generate natural-language narrative descriptions of C4 architecture diagrams; 008_c4_narrative migration stores generated narratives alongside diagrams",
+    day:"Day 2 · Jul 16", completedAt:"2026-07-16T00:00", notes:"", commit:"dd60560"
   },
   {
     id:7, status:"done",
@@ -761,6 +761,24 @@ const DEFAULT_MILESTONES = [
     title:"/parallax/portal — Interactive UI & C4 Diagrams",
     desc:"Full standalone /parallax/portal page with JS-panel layout: interactive Cytoscape signal graph, C4 PlantUML architecture diagrams, blast-radius visualization, signal inventory table, and auto-scan trigger",
     day:"Day 2 · Jul 15 23:00", completedAt:"2026-07-15T23:00", notes:"", commit:"df66f8e"
+  },
+  {
+    id:10, status:"done", stretch:true,
+    title:"Full G1+G2+G3 — App→RVM→Elpis→Zonal 4-Layer Chain",
+    desc:"Complete end-to-end signal propagation graph: G1 (App→RVM service layer), G2 (RVM→Elpis bridge via YAML routing rules), G3 (Elpis→Zonal gateway via RAL bus) — all three graph layers joined and queryable in a single traversal; 3 new DB migrations (004–006)",
+    day:"Day 2 · Jul 16", completedAt:"2026-07-16T00:00", notes:"", commit:"12d2b41"
+  },
+  {
+    id:11, status:"done", stretch:true,
+    title:"Bidirectional BFS Signal Search + C4 Diagram Store",
+    desc:"Signal-flow search traverses edges in both forward and backward directions across all namespaces — find all signals upstream or downstream of any node; diagram_store.py persists C4 SVG diagrams in DB (007_c4_diagrams_store.sql) with source/diagram toggle in portal UI",
+    day:"Day 2 · Jul 16", completedAt:"2026-07-16T00:00", notes:"", commit:"b7c248e"
+  },
+  {
+    id:12, status:"done", stretch:true,
+    title:"What-If Blast Radius + Pan/Zoom Diagram Modal",
+    desc:"Interactive What-If analysis computes blast radius of a signal change across the full 4-layer chain; diagram modal renders real C4 SVGs with pan/zoom navigation; blast radius highlights all affected nodes in the Cytoscape graph",
+    day:"Day 2 · Jul 16", completedAt:"2026-07-16T00:00", notes:"", commit:"1b326de"
   }
 ];
 
@@ -768,14 +786,14 @@ const DEFAULT_METRICS = [
   {id:"repos",   icon:"🗂️", value:"4",    label:"Repos Covered",      note:"RVM · EGW2 · RAL · Kotlin"},
   {id:"parsers", icon:"⚙️", value:"5",    label:"Signal Parsers",     note:"L1–L5, all layers"},
   {id:"signals", icon:"📡", value:"50+",  label:"Signals in Scope",   note:"v1_0 variant only"},
-  {id:"commits", icon:"⬡",  value:"16",   label:"Feature Commits",    note:"feature/parallax-tracer"},
+  {id:"commits", icon:"⬡",  value:"28",   label:"Feature Commits",    note:"feature/parallax-tracer"},
   {id:"portal",  icon:"🖥️", value:"1",    label:"Portal Pages",       note:"/parallax/portal live"},
-  {id:"hrs",     icon:"⏱️", value:"2.5h", label:"Saved / Trace",      note:"vs. manual grep"},
+  {id:"migrations", icon:"🗄️", value:"8",  label:"DB Migrations",     note:"001–008, full schema"},
 ];
 
 // ═══════════════════════════════════════════════════════════════════
 
-const STORE = 'parallax_dash_v3';
+const STORE = 'parallax_dash_v4';
 
 function loadState(){
   try{
