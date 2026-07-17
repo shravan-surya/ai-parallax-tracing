@@ -1,9 +1,34 @@
 {
-  "generated_at": "2026-07-16T22:14:50.326217+00:00",
+  "generated_at": "2026-07-17T08:26:52.618305+00:00",
   "source_repo": "shravan-surya/saras_kno_B",
-  "branch": "feature/parallax-tracer",
-  "commit_count": 43,
+  "branch": "feature/phase-42-and-beyond",
+  "commit_count": 48,
   "commits": [
+    {
+      "sha": "42082e88",
+      "date": "2026-07-17T10:02:54+02:00",
+      "message": "fix: What-If UX improvements \u2014 entities, risk, depth, diagram, history detail"
+    },
+    {
+      "sha": "ad0b44df",
+      "date": "2026-07-17T09:38:47+02:00",
+      "message": "fix: What-If explanation \u2014 signal names now readable (pp-narrative code color)"
+    },
+    {
+      "sha": "ab96a63e",
+      "date": "2026-07-17T09:31:57+02:00",
+      "message": "feat: What-If impact explanation + analysis history (Phase 46-H)"
+    },
+    {
+      "sha": "24f8e611",
+      "date": "2026-07-17T08:42:47+02:00",
+      "message": "feat: P47-A \u2014 GET /api/parallax/signals/batch endpoint for Saras Diagnostic Analyzer"
+    },
+    {
+      "sha": "abd4cf17",
+      "date": "2026-07-17T00:23:59+02:00",
+      "message": "feat: Phase 46-G \u2014 /ask /chat parallax wiring + skill collector injection"
+    },
     {
       "sha": "b008681a",
       "date": "2026-07-16T23:26:42+02:00",
@@ -311,6 +336,27 @@
       "completed_at": "2026-07-16T18:17:46+02:00",
       "source_commit": "932a5c97",
       "source_message": "feat(parallax): fcose layout + box-select + ECU cluster view"
+    },
+    {
+      "id": 14,
+      "status": "done",
+      "completed_at": "2026-07-17T00:23:59+02:00",
+      "source_commit": "abd4cf17",
+      "source_message": "feat: Phase 46-G \u2014 /ask /chat parallax wiring + skill collector injection"
+    },
+    {
+      "id": 15,
+      "status": "done",
+      "completed_at": "2026-07-17T09:31:57+02:00",
+      "source_commit": "ab96a63e",
+      "source_message": "feat: What-If impact explanation + analysis history (Phase 46-H)"
+    },
+    {
+      "id": 16,
+      "status": "done",
+      "completed_at": "2026-07-17T08:42:47+02:00",
+      "source_commit": "24f8e611",
+      "source_message": "feat: P47-A \u2014 GET /api/parallax/signals/batch endpoint for Saras Diagnostic Analyzer"
     }
   ]
 }

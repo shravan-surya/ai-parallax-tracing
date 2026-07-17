@@ -108,6 +108,24 @@ RULES = [
         "keywords": ["fcose", "fcose layout", "ecu cluster", "cluster view",
                      "box-select", "box select", "shuffle button"],
     },
+    {
+        "id": 14, "title": "KB /ask + /chat Parallax Signal Wiring",
+        "files":    [r"ask_context", r"skill collector injection"],
+        "keywords": ["parallax wiring", "skill collector injection", "ask context",
+                     "46-g", "phase 46-g", "build_parallax_context"],
+    },
+    {
+        "id": 15, "title": "What-If Impact Explanation + Analysis History",
+        "files":    [r"explanation_generator", r"009_whatif_history"],
+        "keywords": ["whatif-explain", "whatif history", "what-if impact explanation",
+                     "46-h", "phase 46-h", "whatif_history"],
+    },
+    {
+        "id": 16, "title": "Saras Diagnostic Analyzer — PCAP/DLT Enrichment",
+        "files":    [],   # lives in separate saras-diag repo
+        "keywords": ["signals/batch", "saras diagnostic", "p47-a", "pdu_ids",
+                     "pcap enrichment", "saras diag"],
+    },
 ]
 
 
